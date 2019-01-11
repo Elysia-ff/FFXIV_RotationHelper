@@ -9,7 +9,7 @@ namespace FFXIV_RotationHelper
 {
     public class ActionData
     {
-        public string Code { get; private set; }
+        public int Code { get; private set; }
         public int DBIdx { get; private set; }
     }
 }

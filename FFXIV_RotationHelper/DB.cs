@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -14,7 +15,7 @@ namespace FFXIV_RotationHelper
     public static class DB
     {
         private static Dictionary<int, SkillData> data;
-        private static Dictionary<string, string> table;
+        private static Dictionary<int, int> table;
         public static bool IsLoaded { get; private set; }
 
         private static readonly Regex skillRegex = new Regex(@"\d+:{icon:[^}]*}");
@@ -25,11 +26,20 @@ namespace FFXIV_RotationHelper
             using (StringReader reader = new StringReader(Properties.Resources.ActionTable))
             using (CsvReader csv = new CsvReader(reader))
             {
-                table = new Dictionary<string, string>();
+                table = new Dictionary<int, int>();
                 await csv.ReadAsync();
                 while (await csv.ReadAsync())
                 {
-                    table.Add(csv.Context.Record[0], csv.Context.Record[1]);
+                    try
+                    {
+                        string[] records = csv.Context.Record;
+                        int code = int.Parse(records[0], NumberStyles.HexNumber);
+                        int dbCode = int.Parse(records[1]);
+                        table.Add(code, dbCode);
+                    }
+                    catch
+                    {
+                    }
                 }
             }
             #endregion
@@ -77,7 +87,7 @@ namespace FFXIV_RotationHelper
             return list;
         }
 
-        public static string ConvertCode(string code)
+        public static int ConvertCode(int code)
         {
             if (table.ContainsKey(code))
                 return table[code];

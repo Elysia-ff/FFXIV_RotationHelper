@@ -128,7 +128,7 @@ namespace FFXIV_RotationHelper
                 return;
 
             SkillData skillData = skillList[currentIdx];
-            if (skillData.Idx.ToString() == logData.DBCode)
+            if (skillData.Idx == logData.DBCode)
             {
                 ++currentIdx;
                 Reposition();
