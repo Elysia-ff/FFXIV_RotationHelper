@@ -99,7 +99,7 @@ namespace FFXIV_RotationHelper
             StreamReader streamReader = new StreamReader(response.GetResponseStream());
             string content = await streamReader.ReadToEndAsync();
             RotationData data = JsonConvert.DeserializeObject<RotationData>(content, new SequenceConverter());
-            data.SetURL(url);
+            data.URL = url;
 
             return data;
         }
@@ -130,10 +130,34 @@ namespace FFXIV_RotationHelper
                 {
                     rotationWindow.OnActionCasted(log);
                 }
-#if DEBUG
-                Debug.WriteLine(log.ToString());
-#endif
             }
         }
+
+#if DEBUG
+        private void DebugTextBox_TextChanged(object sender, EventArgs e)
+        {
+            List<SkillData> list = DB.Find(debugTextBox.Text);
+            StringBuilder stringBuilder = new StringBuilder();
+            StringBuilder idxStr = new StringBuilder();
+            for (int i = 0; i < list.Count; ++i)
+            {
+                stringBuilder.Append(list[i]);
+                stringBuilder.Append("\n");
+
+                idxStr.Append(list[i].Idx);
+                idxStr.Append(",");
+            }
+
+            if (stringBuilder.Length > 0)
+                stringBuilder.Remove(stringBuilder.Length - 1, 1);
+            if (idxStr.Length > 0)
+            {
+                idxStr.Remove(idxStr.Length - 1, 1);
+                Clipboard.SetText(idxStr.ToString());
+            }
+
+            debugLabel.Text = stringBuilder.ToString();
+        }
+#endif
     }
 }

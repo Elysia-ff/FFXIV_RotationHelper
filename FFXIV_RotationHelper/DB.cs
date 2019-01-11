@@ -77,9 +77,6 @@ namespace FFXIV_RotationHelper
                 if (data.TryGetValue(sequence[i], out skillData))
                 {
                     list.Add(skillData);
-#if DEBUG
-                    Debug.WriteLine(skillData.Idx + "," + skillData.Name);
-#endif
                 }
             }
 
@@ -94,5 +91,29 @@ namespace FFXIV_RotationHelper
 
             return code;
         }
+
+#if DEBUG
+        public static List<SkillData> Find(string actionName)
+        {
+            try
+            {
+                actionName = actionName.Replace(" ", "").ToLower();
+
+                List<SkillData> list = new List<SkillData>();
+                foreach (KeyValuePair<int, SkillData> kv in data)
+                {
+                    string str = kv.Value.Name.Replace(" ", "").ToLower();
+                    if (str.Equals(actionName))
+                        list.Add(kv.Value);
+                }
+
+                return list;
+            }
+            catch
+            {
+                return new List<SkillData>();
+            }
+        }
+#endif
     }
 }

@@ -31,6 +31,8 @@
             this.urlTextBox = new System.Windows.Forms.TextBox();
             this.loadBtn = new System.Windows.Forms.Button();
             this.startBtn = new System.Windows.Forms.Button();
+            this.debugTextBox = new System.Windows.Forms.TextBox();
+            this.debugLabel = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // urlTextBox
@@ -62,10 +64,29 @@
             this.startBtn.UseVisualStyleBackColor = true;
             this.startBtn.Click += new System.EventHandler(this.StartBtn_Click);
             // 
+            // debugTextBox
+            // 
+            this.debugTextBox.Location = new System.Drawing.Point(224, 96);
+            this.debugTextBox.Name = "debugTextBox";
+            this.debugTextBox.Size = new System.Drawing.Size(285, 21);
+            this.debugTextBox.TabIndex = 3;
+            this.debugTextBox.TextChanged += new System.EventHandler(this.DebugTextBox_TextChanged);
+            // 
+            // debugLabel
+            // 
+            this.debugLabel.AutoSize = true;
+            this.debugLabel.Location = new System.Drawing.Point(222, 130);
+            this.debugLabel.Name = "debugLabel";
+            this.debugLabel.Size = new System.Drawing.Size(11, 12);
+            this.debugLabel.TabIndex = 4;
+            this.debugLabel.Text = "=";
+            // 
             // FFXIV_RotationHelper
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.debugLabel);
+            this.Controls.Add(this.debugTextBox);
             this.Controls.Add(this.startBtn);
             this.Controls.Add(this.loadBtn);
             this.Controls.Add(this.urlTextBox);
@@ -81,5 +102,7 @@
         private System.Windows.Forms.TextBox urlTextBox;
         private System.Windows.Forms.Button loadBtn;
         private System.Windows.Forms.Button startBtn;
+        private System.Windows.Forms.TextBox debugTextBox;
+        private System.Windows.Forms.Label debugLabel;
     }
 }

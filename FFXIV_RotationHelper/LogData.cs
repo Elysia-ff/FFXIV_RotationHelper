@@ -15,10 +15,6 @@ namespace FFXIV_RotationHelper
         public int DBCode { get; private set; }
         public bool IsValid { get; private set; }
 
-#if DEBUG
-        public string Name { get; private set; }
-#endif
-
         private const char separator = '|';
 
         public LogData(string logLine)
@@ -34,9 +30,6 @@ namespace FFXIV_RotationHelper
                 IsByMe = log[2].Equals(LogDefine.byMe); // TODO : 내 로그인지 확인하는 법을 이름 검색으로 바꿔야함 
                 Code = int.Parse(log[4], NumberStyles.HexNumber);
                 DBCode = DB.ConvertCode(Code);
-#if DEBUG
-                Name = log[5];
-#endif
 
                 IsValid = (Type == LogDefine.Type.Ability || Type == LogDefine.Type.AOEAbility) && IsByMe;
             }
@@ -46,21 +39,9 @@ namespace FFXIV_RotationHelper
                 IsByMe = false;
                 Code = -1;
                 DBCode = -1;
+
                 IsValid = false;
-
-#if DEBUG
-                Name = string.Empty;
-#endif
             }
-        }
-
-        public override string ToString()
-        {
-#if DEBUG
-            return string.Format("{0} | {1} | {2}", Type.ToString(), Code, Name);
-#else
-            return string.Format("{0} | {1}", Type.ToString(), Code);
-#endif
         }
     }
 }

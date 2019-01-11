@@ -9,7 +9,7 @@ namespace FFXIV_RotationHelper
 {
     public class RotationData
     {
-        public string URL { get; private set; } = string.Empty;
+        public string URL { get; set; } = string.Empty;
 
         [JsonProperty("hits")]
         public int Hits { get; set; }
@@ -19,11 +19,6 @@ namespace FFXIV_RotationHelper
 
         [JsonProperty("sequence")]
         public List<int> Sequence { get; set; }
-
-        public void SetURL(string url)
-        {
-            URL = url;
-        }
     }
 
     public class SequenceConverter : JsonConverter<List<int>>
