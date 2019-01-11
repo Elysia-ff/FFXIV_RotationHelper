@@ -79,6 +79,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActionData.cs" />
+    <Compile Include="AssemblyResolver.cs" />
     <Compile Include="DB.cs" />
     <Compile Include="FFXIV_RotationHelper.cs">
       <SubType>UserControl</SubType>

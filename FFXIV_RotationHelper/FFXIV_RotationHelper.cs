@@ -12,22 +12,30 @@ using System.Net;
 using System.IO;
 using Newtonsoft.Json;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace FFXIV_RotationHelper
 {
     public partial class FFXIV_RotationHelper : UserControl, IActPluginV1
     {
+        private AssemblyResolver assemblyResolver;
+
         private Label lblStatus;
         private RotationWindow rotationWindow;
 
         public FFXIV_RotationHelper()
         {
+            assemblyResolver = new AssemblyResolver(this);
+
             InitializeComponent();
         }
 
         #region IActPluginV1 Method
         public void InitPlugin(TabPage pluginScreenSpace, Label pluginStatusText)
         {
+            Assembly.Load("CsvHelper.dll");
+            Assembly.Load("Newtonsoft.Json.dll");
+
             pluginScreenSpace.Controls.Add(this);
             Dock = DockStyle.Fill;
             lblStatus = pluginStatusText;
@@ -38,6 +46,7 @@ namespace FFXIV_RotationHelper
             urlTextBox.Text = "http://ffxivrotations.com/1w7v";
 #endif
 
+            ActGlobals.oFormActMain.BeforeLogLineRead -= OFormActMain_BeforeLogLineRead;
             ActGlobals.oFormActMain.BeforeLogLineRead += OFormActMain_BeforeLogLineRead;
         }
 
