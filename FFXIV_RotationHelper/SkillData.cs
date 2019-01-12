@@ -34,7 +34,7 @@ namespace FFXIV_RotationHelper
 
         private static readonly Regex idxRegex = new Regex(@"^\d+");                        // 4096
         private static readonly Regex iconURLRegex = new Regex(@"icon:""((\d|\w|\s)+)"","); // icon:"001072",
-        private static readonly Regex nameRegex = new Regex(@"name:""((\w|\s|')+)"",");     // name:"Prune",
+        private static readonly Regex nameRegex = new Regex(@"name:""((\w|\s|'|:|-)+)"",");     // name:"Prune",
 
         public const string IconURLFormat = "http://ffxivrotations.com/icons/{0}.png";
 

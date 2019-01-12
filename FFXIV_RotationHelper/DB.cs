@@ -35,7 +35,9 @@ namespace FFXIV_RotationHelper
                         string[] records = csv.Context.Record;
                         int code = int.Parse(records[0], NumberStyles.HexNumber);
                         int dbCode = int.Parse(records[1]);
-                        table.Add(code, dbCode);
+
+                        if (code != dbCode && !table.ContainsKey(code))
+                            table.Add(code, dbCode);
                     }
                     catch
                     {
