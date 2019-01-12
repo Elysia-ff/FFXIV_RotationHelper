@@ -55,6 +55,7 @@ namespace FFXIV_RotationHelper
             lblStatus.Text = "No Status";
 
             ActGlobals.oFormActMain.BeforeLogLineRead -= OFormActMain_BeforeLogLineRead;
+            PlayerData.Free();
         }
         #endregion
 
@@ -123,13 +124,30 @@ namespace FFXIV_RotationHelper
 
         private void OFormActMain_BeforeLogLineRead(bool isImport, LogLineEventArgs logInfo)
         {
-            LogData log = new LogData(logInfo.logLine);
-            if (log.IsValid)
+            string[] logLine = logInfo.logLine.Split('|');
+            if (!int.TryParse(logLine[0], out int logCode))
+                return;
+
+            LogDefine.Type logType = (LogDefine.Type)logCode;
+            switch (logType)
             {
-                if (rotationWindow.Visible)
-                {
-                    rotationWindow.OnActionCasted(log);
-                }
+                case LogDefine.Type.ChangePrimaryPlayer:
+                    PlayerData.Instance.SetPlayer(logLine);
+                    break;
+                case LogDefine.Type.AddCombatant:
+                    PlayerData.Instance.SetPet(logLine);
+                    break;
+                case LogDefine.Type.Ability:
+                case LogDefine.Type.AOEAbility:
+                    LogData log = new LogData(logLine);
+                    if (log.IsValid)
+                    {
+                        if (rotationWindow.Visible)
+                        {
+                            rotationWindow.OnActionCasted(log);
+                        }
+                    }
+                    break;
             }
         }
 

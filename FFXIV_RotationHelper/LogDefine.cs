@@ -10,11 +10,10 @@ namespace FFXIV_RotationHelper
     {
         public enum Type
         {
-            Error = -1,
+            ChangePrimaryPlayer = 2,
+            AddCombatant = 3,
             Ability = 21,
             AOEAbility = 22,
         }
-
-        public const string byMe = "100D3D81";
     }
 }
