@@ -33,6 +33,10 @@
             this.startBtn = new System.Windows.Forms.Button();
             this.debugTextBox = new System.Windows.Forms.TextBox();
             this.debugLabel = new System.Windows.Forms.Label();
+            this.nameTitle = new System.Windows.Forms.Label();
+            this.nameText = new System.Windows.Forms.Label();
+            this.petTitle = new System.Windows.Forms.Label();
+            this.petText = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // urlTextBox
@@ -56,7 +60,7 @@
             // startBtn
             // 
             this.startBtn.Enabled = false;
-            this.startBtn.Location = new System.Drawing.Point(16, 96);
+            this.startBtn.Location = new System.Drawing.Point(16, 119);
             this.startBtn.Name = "startBtn";
             this.startBtn.Size = new System.Drawing.Size(75, 23);
             this.startBtn.TabIndex = 2;
@@ -81,10 +85,50 @@
             this.debugLabel.TabIndex = 4;
             this.debugLabel.Text = "=";
             // 
+            // nameTitle
+            // 
+            this.nameTitle.AutoSize = true;
+            this.nameTitle.Location = new System.Drawing.Point(20, 70);
+            this.nameTitle.Name = "nameTitle";
+            this.nameTitle.Size = new System.Drawing.Size(47, 12);
+            this.nameTitle.TabIndex = 5;
+            this.nameTitle.Text = "Name :";
+            // 
+            // nameText
+            // 
+            this.nameText.AutoSize = true;
+            this.nameText.Location = new System.Drawing.Point(73, 70);
+            this.nameText.Name = "nameText";
+            this.nameText.Size = new System.Drawing.Size(63, 12);
+            this.nameText.TabIndex = 6;
+            this.nameText.Text = "Not Found";
+            // 
+            // petTitle
+            // 
+            this.petTitle.AutoSize = true;
+            this.petTitle.Location = new System.Drawing.Point(20, 95);
+            this.petTitle.Name = "petTitle";
+            this.petTitle.Size = new System.Drawing.Size(47, 12);
+            this.petTitle.TabIndex = 7;
+            this.petTitle.Text = "Pet     :";
+            // 
+            // petText
+            // 
+            this.petText.AutoSize = true;
+            this.petText.Location = new System.Drawing.Point(73, 95);
+            this.petText.Name = "petText";
+            this.petText.Size = new System.Drawing.Size(63, 12);
+            this.petText.TabIndex = 9;
+            this.petText.Text = "Not Found";
+            // 
             // FFXIV_RotationHelper
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.petText);
+            this.Controls.Add(this.petTitle);
+            this.Controls.Add(this.nameText);
+            this.Controls.Add(this.nameTitle);
             this.Controls.Add(this.debugLabel);
             this.Controls.Add(this.debugTextBox);
             this.Controls.Add(this.startBtn);
@@ -104,5 +148,9 @@
         private System.Windows.Forms.Button startBtn;
         private System.Windows.Forms.TextBox debugTextBox;
         private System.Windows.Forms.Label debugLabel;
+        private System.Windows.Forms.Label nameTitle;
+        private System.Windows.Forms.Label nameText;
+        private System.Windows.Forms.Label petTitle;
+        private System.Windows.Forms.Label petText;
     }
 }

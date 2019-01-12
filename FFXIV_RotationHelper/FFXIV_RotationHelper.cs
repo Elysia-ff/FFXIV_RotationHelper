@@ -132,11 +132,19 @@ namespace FFXIV_RotationHelper
             switch (logType)
             {
                 case LogDefine.Type.ChangePrimaryPlayer:
-                    PlayerData.Instance.SetPlayer(logLine);
+                    if (PlayerData.Instance.SetPlayer(logLine))
+                    {
+                        nameText.Text = PlayerData.Instance.Name;
+                    }
                     break;
+
                 case LogDefine.Type.AddCombatant:
-                    PlayerData.Instance.SetPet(logLine);
+                    if (PlayerData.Instance.SetPet(logLine))
+                    {
+                        petText.Text = PlayerData.Instance.PetName;
+                    }
                     break;
+
                 case LogDefine.Type.Ability:
                 case LogDefine.Type.AOEAbility:
                     LogData log = new LogData(logLine);

@@ -81,7 +81,6 @@ namespace FFXIV_RotationHelper
                     list.Add(skillData);
                 }
             }
-
             
             return list;
         }

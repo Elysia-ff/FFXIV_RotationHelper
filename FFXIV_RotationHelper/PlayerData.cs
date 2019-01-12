@@ -25,7 +25,7 @@ namespace FFXIV_RotationHelper
         public uint PetCode { get; private set; } = 0;
         public string PetName { get; private set; } = string.Empty;
 
-        public void SetPlayer(string[] log)
+        public bool SetPlayer(string[] log)
         {
             try
             {
@@ -33,18 +33,22 @@ namespace FFXIV_RotationHelper
                 // Me  02|2019-01-12T23:31:21.3100000+09:00|100d3d81|Ellie|bd34d5f741c6d8d6721c51699ae8aafc
                 Code = uint.Parse(log[2], NumberStyles.HexNumber);
                 Name = log[3];
+
+                return true;
             }
             catch
             {
             }
+
+            return false;
         }
 
-        public void SetPet(string[] log)
+        public bool SetPet(string[] log)
         {
             try
             {
                 if (Code <= 0)
-                    return;
+                    return false;
 
                 //     0  1                                 2        3           4 5  6    7    8
                 // Pet 03|2019-01-13T00:55:58.3230000+09:00|40019742|요정 에오스|0|46|a8d8|2ee0|100d3d81|918bd70cb1e0ccbed68d3b600ac8dd18
@@ -53,11 +57,15 @@ namespace FFXIV_RotationHelper
                 {
                     PetCode = uint.Parse(log[2], NumberStyles.HexNumber);
                     PetName = log[3];
+
+                    return true;
                 }
             }
             catch
             {
             }
+
+            return false;
         }
     }
 }
