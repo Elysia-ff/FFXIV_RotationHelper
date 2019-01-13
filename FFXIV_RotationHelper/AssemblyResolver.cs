@@ -31,10 +31,8 @@ namespace FFXIV_RotationHelper
         {
             string dir = ActGlobals.oFormActMain?.PluginGetSelfData(plugin)?.pluginFile.DirectoryName;
             Assembly assembly = TryLoadAssembly(dir, args.Name);
-            if (assembly != null)
-                return assembly;
 
-            return null;
+            return assembly;
         }
 
         private Assembly TryLoadAssembly(string dir, string name)
