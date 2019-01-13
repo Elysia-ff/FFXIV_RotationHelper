@@ -26,8 +26,11 @@ namespace FFXIV_RotationHelper
         public FFXIV_RotationHelper()
         {
             assemblyResolver = new AssemblyResolver(this);
+            rotationWindow = new RotationWindow();
 
             InitializeComponent();
+            isClickthroughCheckBox.Checked = Properties.Settings.Default.Clickthrough;
+            restartCheckBox.Checked = Properties.Settings.Default.RestartOnEnd;
         }
 
         #region IActPluginV1 Method
@@ -40,8 +43,7 @@ namespace FFXIV_RotationHelper
             Dock = DockStyle.Fill;
             lblStatus = pluginStatusText;
             lblStatus.Text = "Plugin Started";
-
-            rotationWindow = new RotationWindow();
+            
 #if DEBUG
             urlTextBox.Text = "http://ffxivrotations.com/1w7v";
 #endif
@@ -208,6 +210,23 @@ namespace FFXIV_RotationHelper
             }
 
             debugLabel.Text = stringBuilder.ToString();
+        }
+
+        private void IsClickthroughCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.Clickthrough = isClickthroughCheckBox.Checked;
+            Properties.Settings.Default.Save();
+
+            if (rotationWindow.Visible)
+            {
+                rotationWindow.SetClickthrough(Properties.Settings.Default.Clickthrough);
+            }
+        }
+
+        private void RestartCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.RestartOnEnd = restartCheckBox.Checked;
+            Properties.Settings.Default.Save();
         }
 #endif
     }

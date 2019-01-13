@@ -16,11 +16,17 @@ namespace FFXIV_RotationHelper
     {
         public const int WM_NCLBUTTONDOWN = 0xA1;
         public const int HT_CAPTION = 0x2;
+        public const int GWL_EXSTYLE = -20;
+        public const int WS_EX_TRANSPARENT = 0x00000020;
 
         [DllImport("user32.dll")]
         public static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
         [DllImport("user32.dll")]
         public static extern bool ReleaseCapture();
+        [DllImport("user32.dll")]
+        public static extern int GetWindowLong(IntPtr hwnd, int index);
+        [DllImport("user32.dll")]
+        public static extern int SetWindowLong(IntPtr hwnd, int index, int newStyle);
 
         private RotationData loadedData;
         private List<SkillData> skillList;
@@ -42,6 +48,7 @@ namespace FFXIV_RotationHelper
 
             MouseDown += RotationWindow_MouseDown;
             VisibleChanged += RotationWindow_VisibleChanged;
+            LocationChanged += RotationWindow_LocationChanged;
         }
 
         private void RotationWindow_MouseDown(object sender, MouseEventArgs e)
@@ -57,8 +64,18 @@ namespace FFXIV_RotationHelper
         {
             if (Visible)
             {
+                Location = Properties.Settings.Default.Location;
                 currentIdx = 0;
                 MakePictureBox();
+            }
+        }
+
+        private void RotationWindow_LocationChanged(object sender, EventArgs e)
+        {
+            if (Visible)
+            {
+                Properties.Settings.Default.Location = Location;
+                Properties.Settings.Default.Save();
             }
         }
 
@@ -95,6 +112,7 @@ namespace FFXIV_RotationHelper
             }
 
             Reposition();
+            SetClickthrough(Properties.Settings.Default.Clickthrough);
         }
 
         private void Reposition()
@@ -131,8 +149,25 @@ namespace FFXIV_RotationHelper
             if (skillData.Idx == logData.DBCode)
             {
                 ++currentIdx;
-                Reposition();
+                if ((currentIdx >= skillList.Count) && Properties.Settings.Default.RestartOnEnd)
+                {
+                    currentIdx = 0;
+                    MakePictureBox();
+                }
+                else
+                {
+                    Reposition();
+                }
             }
+        }
+
+        public void SetClickthrough(bool clickthrough)
+        {
+            IntPtr hwnd = Handle;
+            int extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+            int newStyle = clickthrough ? extendedStyle | WS_EX_TRANSPARENT : extendedStyle & ~WS_EX_TRANSPARENT;
+
+            SetWindowLong(hwnd, GWL_EXSTYLE, newStyle);
         }
     }
 }

@@ -39,6 +39,8 @@
             this.petText = new System.Windows.Forms.Label();
             this.statusLabel = new System.Windows.Forms.Label();
             this.thanksToLabel = new System.Windows.Forms.LinkLabel();
+            this.isClickthroughCheckBox = new System.Windows.Forms.CheckBox();
+            this.restartCheckBox = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // urlTextBox
@@ -72,7 +74,7 @@
             // 
             // debugTextBox
             // 
-            this.debugTextBox.Location = new System.Drawing.Point(224, 96);
+            this.debugTextBox.Location = new System.Drawing.Point(16, 177);
             this.debugTextBox.Name = "debugTextBox";
             this.debugTextBox.Size = new System.Drawing.Size(285, 21);
             this.debugTextBox.TabIndex = 3;
@@ -81,7 +83,7 @@
             // debugLabel
             // 
             this.debugLabel.AutoSize = true;
-            this.debugLabel.Location = new System.Drawing.Point(222, 130);
+            this.debugLabel.Location = new System.Drawing.Point(14, 211);
             this.debugLabel.Name = "debugLabel";
             this.debugLabel.Size = new System.Drawing.Size(11, 12);
             this.debugLabel.TabIndex = 4;
@@ -143,10 +145,34 @@
             this.thanksToLabel.Text = "Thanks to ffxivrotations.com";
             this.thanksToLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.ThanksToLabel_LinkClicked);
             // 
+            // isClickthroughCheckBox
+            // 
+            this.isClickthroughCheckBox.AutoSize = true;
+            this.isClickthroughCheckBox.Location = new System.Drawing.Point(402, 70);
+            this.isClickthroughCheckBox.Name = "isClickthroughCheckBox";
+            this.isClickthroughCheckBox.Size = new System.Drawing.Size(100, 16);
+            this.isClickthroughCheckBox.TabIndex = 12;
+            this.isClickthroughCheckBox.Text = "Click-through";
+            this.isClickthroughCheckBox.UseVisualStyleBackColor = true;
+            this.isClickthroughCheckBox.CheckedChanged += new System.EventHandler(this.IsClickthroughCheckBox_CheckedChanged);
+            // 
+            // restartCheckBox
+            // 
+            this.restartCheckBox.AutoSize = true;
+            this.restartCheckBox.Location = new System.Drawing.Point(402, 91);
+            this.restartCheckBox.Name = "restartCheckBox";
+            this.restartCheckBox.Size = new System.Drawing.Size(107, 16);
+            this.restartCheckBox.TabIndex = 13;
+            this.restartCheckBox.Text = "Restart on End";
+            this.restartCheckBox.UseVisualStyleBackColor = true;
+            this.restartCheckBox.CheckedChanged += new System.EventHandler(this.RestartCheckBox_CheckedChanged);
+            // 
             // FFXIV_RotationHelper
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.restartCheckBox);
+            this.Controls.Add(this.isClickthroughCheckBox);
             this.Controls.Add(this.thanksToLabel);
             this.Controls.Add(this.statusLabel);
             this.Controls.Add(this.petText);
@@ -178,5 +204,7 @@
         private System.Windows.Forms.Label petText;
         private System.Windows.Forms.Label statusLabel;
         private System.Windows.Forms.LinkLabel thanksToLabel;
+        private System.Windows.Forms.CheckBox isClickthroughCheckBox;
+        private System.Windows.Forms.CheckBox restartCheckBox;
     }
 }
