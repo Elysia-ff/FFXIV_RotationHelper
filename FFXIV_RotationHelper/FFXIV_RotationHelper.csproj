@@ -78,19 +78,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ActionData.cs" />
+    <Compile Include="Data\ActionData.cs" />
     <Compile Include="AssemblyResolver.cs" />
     <Compile Include="DB.cs" />
-    <Compile Include="FFXIV_RotationHelper.cs">
+    <Compile Include="Windows\FFXIV_RotationHelper.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="FFXIV_RotationHelper.Designer.cs">
+    <Compile Include="Windows\FFXIV_RotationHelper.Designer.cs">
       <DependentUpon>FFXIV_RotationHelper.cs</DependentUpon>
     </Compile>
-    <Compile Include="LogData.cs" />
+    <Compile Include="Data\LogData.cs" />
     <Compile Include="LogDefine.cs" />
     <Compile Include="NativeMethods.cs" />
-    <Compile Include="PlayerData.cs" />
+    <Compile Include="Data\PlayerData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -102,14 +102,14 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="RotationData.cs" />
-    <Compile Include="RotationWindow.cs">
+    <Compile Include="Data\RotationData.cs" />
+    <Compile Include="Windows\RotationWindow.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="RotationWindow.Designer.cs">
+    <Compile Include="Windows\RotationWindow.Designer.cs">
       <DependentUpon>RotationWindow.cs</DependentUpon>
     </Compile>
-    <Compile Include="SkillData.cs" />
+    <Compile Include="Data\SkillData.cs" />
     <Compile Include="URLConverter.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -117,14 +117,14 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="FFXIV_RotationHelper.resx">
+    <EmbeddedResource Include="Windows\FFXIV_RotationHelper.resx">
       <DependentUpon>FFXIV_RotationHelper.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Include="RotationWindow.resx">
+    <EmbeddedResource Include="Windows\RotationWindow.resx">
       <DependentUpon>RotationWindow.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
