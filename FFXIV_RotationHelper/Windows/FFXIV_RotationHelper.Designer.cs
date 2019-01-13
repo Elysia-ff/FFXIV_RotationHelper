@@ -31,8 +31,10 @@
             this.urlTextBox = new System.Windows.Forms.TextBox();
             this.loadBtn = new System.Windows.Forms.Button();
             this.startBtn = new System.Windows.Forms.Button();
+#if DEBUG
             this.debugTextBox = new System.Windows.Forms.TextBox();
             this.debugLabel = new System.Windows.Forms.Label();
+#endif
             this.nameTitle = new System.Windows.Forms.Label();
             this.nameText = new System.Windows.Forms.Label();
             this.petTitle = new System.Windows.Forms.Label();
@@ -74,6 +76,7 @@
             this.startBtn.Text = "Start";
             this.startBtn.UseVisualStyleBackColor = true;
             this.startBtn.Click += new System.EventHandler(this.StartBtn_Click);
+#if DEBUG
             // 
             // debugTextBox
             // 
@@ -91,6 +94,7 @@
             this.debugLabel.Size = new System.Drawing.Size(11, 12);
             this.debugLabel.TabIndex = 4;
             this.debugLabel.Text = "=";
+#endif
             // 
             // nameTitle
             // 
@@ -213,8 +217,10 @@
             this.Controls.Add(this.petTitle);
             this.Controls.Add(this.nameText);
             this.Controls.Add(this.nameTitle);
+#if DEBUG
             this.Controls.Add(this.debugLabel);
             this.Controls.Add(this.debugTextBox);
+#endif
             this.Controls.Add(this.startBtn);
             this.Controls.Add(this.loadBtn);
             this.Controls.Add(this.urlTextBox);
@@ -225,13 +231,15 @@
 
         }
 
-        #endregion
+#endregion
 
         private System.Windows.Forms.TextBox urlTextBox;
         private System.Windows.Forms.Button loadBtn;
         private System.Windows.Forms.Button startBtn;
+#if DEBUG
         private System.Windows.Forms.TextBox debugTextBox;
         private System.Windows.Forms.Label debugLabel;
+#endif
         private System.Windows.Forms.Label nameTitle;
         private System.Windows.Forms.Label nameText;
         private System.Windows.Forms.Label petTitle;
