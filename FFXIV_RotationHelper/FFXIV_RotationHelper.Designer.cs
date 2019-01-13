@@ -37,6 +37,8 @@
             this.nameText = new System.Windows.Forms.Label();
             this.petTitle = new System.Windows.Forms.Label();
             this.petText = new System.Windows.Forms.Label();
+            this.statusLabel = new System.Windows.Forms.Label();
+            this.thanksToLabel = new System.Windows.Forms.LinkLabel();
             this.SuspendLayout();
             // 
             // urlTextBox
@@ -121,10 +123,32 @@
             this.petText.TabIndex = 9;
             this.petText.Text = "Not Found";
             // 
+            // statusLabel
+            // 
+            this.statusLabel.AutoSize = true;
+            this.statusLabel.Location = new System.Drawing.Point(16, 45);
+            this.statusLabel.Name = "statusLabel";
+            this.statusLabel.Size = new System.Drawing.Size(89, 12);
+            this.statusLabel.TabIndex = 10;
+            this.statusLabel.Text = "Not Initialized..";
+            // 
+            // thanksToLabel
+            // 
+            this.thanksToLabel.AutoSize = true;
+            this.thanksToLabel.Location = new System.Drawing.Point(345, 45);
+            this.thanksToLabel.Name = "thanksToLabel";
+            this.thanksToLabel.Size = new System.Drawing.Size(164, 12);
+            this.thanksToLabel.TabIndex = 11;
+            this.thanksToLabel.TabStop = true;
+            this.thanksToLabel.Text = "Thanks to ffxivrotations.com";
+            this.thanksToLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.ThanksToLabel_LinkClicked);
+            // 
             // FFXIV_RotationHelper
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.thanksToLabel);
+            this.Controls.Add(this.statusLabel);
             this.Controls.Add(this.petText);
             this.Controls.Add(this.petTitle);
             this.Controls.Add(this.nameText);
@@ -152,5 +176,7 @@
         private System.Windows.Forms.Label nameText;
         private System.Windows.Forms.Label petTitle;
         private System.Windows.Forms.Label petText;
+        private System.Windows.Forms.Label statusLabel;
+        private System.Windows.Forms.LinkLabel thanksToLabel;
     }
 }

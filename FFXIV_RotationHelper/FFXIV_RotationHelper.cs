@@ -48,6 +48,8 @@ namespace FFXIV_RotationHelper
 
             ActGlobals.oFormActMain.BeforeLogLineRead -= OFormActMain_BeforeLogLineRead;
             ActGlobals.oFormActMain.BeforeLogLineRead += OFormActMain_BeforeLogLineRead;
+
+            SetStatusLabel();
         }
 
         public void DeInitPlugin()
@@ -80,6 +82,7 @@ namespace FFXIV_RotationHelper
             rotationWindow.LoadData(data);
 
             startBtn.Enabled = true;
+            SetStatusLabel();
             //catch
         }
 
@@ -135,6 +138,7 @@ namespace FFXIV_RotationHelper
                     if (PlayerData.Instance.SetPlayer(logLine))
                     {
                         nameText.Text = PlayerData.Instance.Name;
+                        SetStatusLabel();
                     }
                     break;
 
@@ -156,6 +160,27 @@ namespace FFXIV_RotationHelper
                         }
                     }
                     break;
+            }
+        }
+
+        private void ThanksToLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            Process.Start("http://ffxivrotations.com");
+        }
+
+        private void SetStatusLabel()
+        {
+            if (!rotationWindow.IsLoaded)
+            {
+                statusLabel.Text = "Not initialized - Please load your rotation.";
+            }
+            else if (string.IsNullOrEmpty(PlayerData.Instance.Name))
+            {
+                statusLabel.Text = "Not found player info. - Please restart the ACT.";
+            }
+            else
+            {
+                statusLabel.Text = "Initialized - Ready to start.";
             }
         }
 
