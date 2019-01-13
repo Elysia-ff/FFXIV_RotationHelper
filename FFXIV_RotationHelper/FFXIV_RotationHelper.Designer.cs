@@ -41,10 +41,13 @@
             this.thanksToLabel = new System.Windows.Forms.LinkLabel();
             this.isClickthroughCheckBox = new System.Windows.Forms.CheckBox();
             this.restartCheckBox = new System.Windows.Forms.CheckBox();
+            this.sizeComboBox = new System.Windows.Forms.ComboBox();
+            this.sizeTitle = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // urlTextBox
             // 
+            this.urlTextBox.ImeMode = System.Windows.Forms.ImeMode.Alpha;
             this.urlTextBox.Location = new System.Drawing.Point(16, 17);
             this.urlTextBox.Name = "urlTextBox";
             this.urlTextBox.Size = new System.Drawing.Size(493, 21);
@@ -167,10 +170,41 @@
             this.restartCheckBox.UseVisualStyleBackColor = true;
             this.restartCheckBox.CheckedChanged += new System.EventHandler(this.RestartCheckBox_CheckedChanged);
             // 
+            // sizeComboBox
+            // 
+            this.sizeComboBox.FormattingEnabled = true;
+            this.sizeComboBox.Items.AddRange(new object[] {
+            "60",
+            "80",
+            "90",
+            "100",
+            "110",
+            "120",
+            "140",
+            "160",
+            "180",
+            "200"});
+            this.sizeComboBox.Location = new System.Drawing.Point(402, 113);
+            this.sizeComboBox.Name = "sizeComboBox";
+            this.sizeComboBox.Size = new System.Drawing.Size(86, 20);
+            this.sizeComboBox.TabIndex = 14;
+            this.sizeComboBox.SelectedIndexChanged += new System.EventHandler(this.SizeComboBox_SelectedIndexChanged);
+            // 
+            // sizeTitle
+            // 
+            this.sizeTitle.AutoSize = true;
+            this.sizeTitle.Location = new System.Drawing.Point(494, 116);
+            this.sizeTitle.Name = "sizeTitle";
+            this.sizeTitle.Size = new System.Drawing.Size(15, 12);
+            this.sizeTitle.TabIndex = 15;
+            this.sizeTitle.Text = "%";
+            // 
             // FFXIV_RotationHelper
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.sizeTitle);
+            this.Controls.Add(this.sizeComboBox);
             this.Controls.Add(this.restartCheckBox);
             this.Controls.Add(this.isClickthroughCheckBox);
             this.Controls.Add(this.thanksToLabel);
@@ -206,5 +240,7 @@
         private System.Windows.Forms.LinkLabel thanksToLabel;
         private System.Windows.Forms.CheckBox isClickthroughCheckBox;
         private System.Windows.Forms.CheckBox restartCheckBox;
+        private System.Windows.Forms.ComboBox sizeComboBox;
+        private System.Windows.Forms.Label sizeTitle;
     }
 }

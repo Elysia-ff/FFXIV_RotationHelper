@@ -58,5 +58,29 @@ namespace FFXIV_RotationHelper.Properties {
                 this["RestartOnEnd"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("100")]
+        public string Size {
+            get {
+                return ((string)(this["Size"]));
+            }
+            set {
+                this["Size"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string lastURL {
+            get {
+                return ((string)(this["lastURL"]));
+            }
+            set {
+                this["lastURL"] = value;
+            }
+        }
     }
 }

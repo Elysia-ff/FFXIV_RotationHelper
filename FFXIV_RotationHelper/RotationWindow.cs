@@ -14,6 +14,8 @@ namespace FFXIV_RotationHelper
 {
     public partial class RotationWindow : Form
     {
+        protected override Size DefaultSize { get { return new Size(800, 40); } }
+
         private RotationData loadedData;
         private List<SkillData> skillList;
         private List<PictureBox> pictureList;
@@ -52,6 +54,7 @@ namespace FFXIV_RotationHelper
                 Location = Properties.Settings.Default.Location;
                 currentIdx = 0;
                 MakePictureBox();
+                SetSize(Properties.Settings.Default.Size);
             }
         }
 
@@ -144,6 +147,21 @@ namespace FFXIV_RotationHelper
                     Reposition();
                 }
             }
+        }
+
+        public void SetSize(string offsetStr)
+        {
+            float offset = float.Parse(offsetStr) * 0.01f;
+            Size defaultSize = DefaultSize;
+            int width = (int)(defaultSize.Width * offset);
+            int height = (int)(defaultSize.Height * offset);
+            SetClientSizeCore(width, height);
+
+            for (int i = 0; i < pictureList.Count; ++i)
+            {
+                pictureList[i].Size = new Size(height, height);
+            }
+            Reposition();
         }
     }
 }

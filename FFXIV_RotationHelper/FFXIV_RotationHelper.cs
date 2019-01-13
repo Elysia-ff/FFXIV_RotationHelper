@@ -31,6 +31,7 @@ namespace FFXIV_RotationHelper
             InitializeComponent();
             isClickthroughCheckBox.Checked = Properties.Settings.Default.Clickthrough;
             restartCheckBox.Checked = Properties.Settings.Default.RestartOnEnd;
+            sizeComboBox.SelectedItem = Properties.Settings.Default.Size.ToString();
         }
 
         #region IActPluginV1 Method
@@ -43,10 +44,8 @@ namespace FFXIV_RotationHelper
             Dock = DockStyle.Fill;
             lblStatus = pluginStatusText;
             lblStatus.Text = "Plugin Started";
-            
-#if DEBUG
-            urlTextBox.Text = "http://ffxivrotations.com/1w7v";
-#endif
+
+            urlTextBox.Text = Properties.Settings.Default.lastURL.ToString();
 
             ActGlobals.oFormActMain.BeforeLogLineRead -= OFormActMain_BeforeLogLineRead;
             ActGlobals.oFormActMain.BeforeLogLineRead += OFormActMain_BeforeLogLineRead;
@@ -115,6 +114,8 @@ namespace FFXIV_RotationHelper
             string content = await streamReader.ReadToEndAsync();
             RotationData data = JsonConvert.DeserializeObject<RotationData>(content, new SequenceConverter());
             data.URL = url;
+            Properties.Settings.Default.lastURL = data.URL;
+            Properties.Settings.Default.Save();
 
             return data;
         }
@@ -195,6 +196,35 @@ namespace FFXIV_RotationHelper
             }
         }
 
+        private void IsClickthroughCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.Clickthrough = isClickthroughCheckBox.Checked;
+            Properties.Settings.Default.Save();
+
+            if (rotationWindow.Visible)
+            {
+                rotationWindow.SetClickThrough(Properties.Settings.Default.Clickthrough);
+            }
+        }
+
+        private void RestartCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.RestartOnEnd = restartCheckBox.Checked;
+            Properties.Settings.Default.Save();
+        }
+
+        private void SizeComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string offsetStr = sizeComboBox.SelectedItem.ToString();
+            Properties.Settings.Default.Size = offsetStr;
+            Properties.Settings.Default.Save();
+
+            if (rotationWindow.Visible)
+            {
+                rotationWindow.SetSize(offsetStr);
+            }
+        }
+
 #if DEBUG
         private void DebugTextBox_TextChanged(object sender, EventArgs e)
         {
@@ -219,23 +249,6 @@ namespace FFXIV_RotationHelper
             }
 
             debugLabel.Text = stringBuilder.ToString();
-        }
-
-        private void IsClickthroughCheckBox_CheckedChanged(object sender, EventArgs e)
-        {
-            Properties.Settings.Default.Clickthrough = isClickthroughCheckBox.Checked;
-            Properties.Settings.Default.Save();
-
-            if (rotationWindow.Visible)
-            {
-                rotationWindow.SetClickThrough(Properties.Settings.Default.Clickthrough);
-            }
-        }
-
-        private void RestartCheckBox_CheckedChanged(object sender, EventArgs e)
-        {
-            Properties.Settings.Default.RestartOnEnd = restartCheckBox.Checked;
-            Properties.Settings.Default.Save();
         }
 #endif
     }
