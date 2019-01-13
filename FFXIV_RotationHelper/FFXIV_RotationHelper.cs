@@ -16,7 +16,7 @@ using System.Reflection;
 
 namespace FFXIV_RotationHelper
 {
-    public partial class FFXIV_RotationHelper : UserControl, IActPluginV1
+    public partial class FFXIV_RotationHelper : UserControl, IActPluginV1, IWin32Window
     {
         private AssemblyResolver assemblyResolver;
 
@@ -65,10 +65,17 @@ namespace FFXIV_RotationHelper
 
         private async void LoadBtn_Click(object sender, EventArgs e)
         {
-            // TODO : RotationWindow 가 켜진 상태에서 로딩 시도 시 에러 팝업 
             if (rotationWindow.Visible)
             {
-                return;
+                DialogResult result = MessageBox.Show(this, "You have to stop the rotation.\nProceed?", "Error", MessageBoxButtons.OKCancel, MessageBoxIcon.Error);
+                if (result == DialogResult.OK)
+                {
+                    startBtn.PerformClick();
+                }
+                else
+                {
+                    return;
+                }
             }
 
             string url = urlTextBox.Text;
@@ -78,14 +85,16 @@ namespace FFXIV_RotationHelper
             loadBtn.Enabled = false;
             startBtn.Enabled = false;
 
-            // TODO : 데이터 다운로드 실패 시 에러 팝업
-            //try
             RotationData data = await GetRotationAsync(url);
             rotationWindow.LoadData(data);
+            if (data == null || data.Sequence == null || data.Sequence.Count <= 0)
+            {
+                MessageBox.Show(this, "Couldn't load the rotation.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
 
             startBtn.Enabled = true;
             SetStatusLabel();
-            //catch
         }
 
         private void URLTextBox_TextChanged(object sender, EventArgs e)
