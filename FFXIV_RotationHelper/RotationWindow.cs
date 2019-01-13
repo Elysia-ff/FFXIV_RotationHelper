@@ -14,20 +14,6 @@ namespace FFXIV_RotationHelper
 {
     public partial class RotationWindow : Form
     {
-        public const int WM_NCLBUTTONDOWN = 0xA1;
-        public const int HT_CAPTION = 0x2;
-        public const int GWL_EXSTYLE = -20;
-        public const int WS_EX_TRANSPARENT = 0x00000020;
-
-        [DllImport("user32.dll")]
-        public static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
-        [DllImport("user32.dll")]
-        public static extern bool ReleaseCapture();
-        [DllImport("user32.dll")]
-        public static extern int GetWindowLong(IntPtr hwnd, int index);
-        [DllImport("user32.dll")]
-        public static extern int SetWindowLong(IntPtr hwnd, int index, int newStyle);
-
         private RotationData loadedData;
         private List<SkillData> skillList;
         private List<PictureBox> pictureList;
@@ -55,8 +41,7 @@ namespace FFXIV_RotationHelper
         {
             if (e.Button == MouseButtons.Left)
             {
-                ReleaseCapture();
-                SendMessage(Handle, WM_NCLBUTTONDOWN, HT_CAPTION, 0);
+                this.MoveFormWithMouse();
             }
         }
 
@@ -112,7 +97,7 @@ namespace FFXIV_RotationHelper
             }
 
             Reposition();
-            SetClickthrough(Properties.Settings.Default.Clickthrough);
+            this.SetClickThrough(Properties.Settings.Default.Clickthrough);
         }
 
         private void Reposition()
@@ -159,15 +144,6 @@ namespace FFXIV_RotationHelper
                     Reposition();
                 }
             }
-        }
-
-        public void SetClickthrough(bool clickthrough)
-        {
-            IntPtr hwnd = Handle;
-            int extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
-            int newStyle = clickthrough ? extendedStyle | WS_EX_TRANSPARENT : extendedStyle & ~WS_EX_TRANSPARENT;
-
-            SetWindowLong(hwnd, GWL_EXSTYLE, newStyle);
         }
     }
 }

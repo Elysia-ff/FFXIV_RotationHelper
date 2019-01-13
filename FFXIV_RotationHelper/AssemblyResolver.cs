@@ -9,9 +9,9 @@ using Advanced_Combat_Tracker;
 
 namespace FFXIV_RotationHelper
 {
-    public class AssemblyResolver : IDisposable
+    public class AssemblyResolver
     {
-        private IActPluginV1 plugin;
+        private readonly IActPluginV1 plugin;
 
         public AssemblyResolver(IActPluginV1 _plugin)
         {
@@ -19,12 +19,6 @@ namespace FFXIV_RotationHelper
 
             AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
-        }
-
-        public void Dispose()
-        {
-            AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
-            plugin = null;
         }
 
         private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)

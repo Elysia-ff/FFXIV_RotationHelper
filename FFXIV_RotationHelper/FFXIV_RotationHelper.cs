@@ -219,7 +219,7 @@ namespace FFXIV_RotationHelper
 
             if (rotationWindow.Visible)
             {
-                rotationWindow.SetClickthrough(Properties.Settings.Default.Clickthrough);
+                rotationWindow.SetClickThrough(Properties.Settings.Default.Clickthrough);
             }
         }
 
