@@ -27,6 +27,19 @@ namespace FFXIV_RotationHelper
 
         private const int interval = 20;
 
+        // Hide from Alt+Tab
+        // https://social.msdn.microsoft.com/Forums/windows/en-US/0eefb6f4-3619-4f7a-b144-48df80e2c603/how-to-hide-form-from-alttab-dialog?forum=winforms
+        protected override CreateParams CreateParams
+        {
+            get
+            {
+                // Turn on WS_EX_TOOLWINDOW style bit
+                CreateParams cp = base.CreateParams;
+                cp.ExStyle |= 0x80;
+                return cp;
+            }
+        }
+
         public RotationWindow()
         {
             skillList = new List<SkillData>();

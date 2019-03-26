@@ -18,14 +18,11 @@ namespace FFXIV_RotationHelper
 {
     public partial class FFXIV_RotationHelper : UserControl, IActPluginV1, IWin32Window
     {
-        private AssemblyResolver assemblyResolver;
-
         private Label lblStatus;
         private RotationWindow rotationWindow;
 
         public FFXIV_RotationHelper()
         {
-            assemblyResolver = new AssemblyResolver(this);
             rotationWindow = new RotationWindow();
 
             InitializeComponent();
@@ -37,9 +34,6 @@ namespace FFXIV_RotationHelper
         #region IActPluginV1 Method
         public void InitPlugin(TabPage pluginScreenSpace, Label pluginStatusText)
         {
-            Assembly.Load("CsvHelper.dll");
-            Assembly.Load("Newtonsoft.Json.dll");
-
             pluginScreenSpace.Controls.Add(this);
             Dock = DockStyle.Fill;
             lblStatus = pluginStatusText;
