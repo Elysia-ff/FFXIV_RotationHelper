@@ -67,5 +67,31 @@ namespace FFXIV_RotationHelper
 
             return false;
         }
+
+        public bool RemovePet(string[] log)
+        {
+            try
+            {
+                if (Code <= 0 || PetCode <= 0)
+                    return false;
+
+                //     0  1                                 2        3           4 5  6    7    8
+                // Pet 04|2019-03-29T21:54:57.2570000+09:00|40010d5e|자동포탑 룩|0|46|ca05|2ee0|100d3d81|0||25deed966a547a062f45df5388bc6a1c
+                uint summonerCode = uint.Parse(log[8], NumberStyles.HexNumber);
+                uint logCode = uint.Parse(log[2], NumberStyles.HexNumber);
+                if (Code == summonerCode && PetCode == logCode)
+                {
+                    PetCode = 0;
+                    PetName = string.Empty;
+
+                    return true;
+                }
+            }
+            catch
+            {
+            }
+
+            return false;
+        }
     }
 }

@@ -155,6 +155,13 @@ namespace FFXIV_RotationHelper
                     }
                     break;
 
+                case LogDefine.Type.RemoveCombatant:
+                    if (PlayerData.Instance.RemovePet(logLine))
+                    {
+                        petText.Text = "Not Found";
+                    }
+                    break;
+
                 case LogDefine.Type.Ability:
                 case LogDefine.Type.AOEAbility:
                     LogData log = new LogData(logLine);
