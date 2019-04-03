@@ -59,14 +59,5 @@ namespace FFXIV_RotationHelper.Properties {
                 resourceCulture = value;
             }
         }
-        
-        /// <summary>
-        ///   과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string ActionTable {
-            get {
-                return ResourceManager.GetString("ActionTable", resourceCulture);
-            }
-        }
     }
 }

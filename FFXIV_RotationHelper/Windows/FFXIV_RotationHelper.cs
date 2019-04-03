@@ -16,7 +16,7 @@ using System.Reflection;
 
 namespace FFXIV_RotationHelper
 {
-    public partial class FFXIV_RotationHelper : UserControl, IActPluginV1, IWin32Window
+    public partial class FFXIV_RotationHelper : UserControl, IActPluginV1
     {
         private Label lblStatus;
         private RotationWindow rotationWindow;
@@ -102,16 +102,17 @@ namespace FFXIV_RotationHelper
 
             string convertedURL = URLConverter.Convert(url);
             HttpWebRequest request = WebRequest.Create(convertedURL) as HttpWebRequest;
-            HttpWebResponse response = await Task.Factory.FromAsync(request.BeginGetResponse, request.EndGetResponse, null) as HttpWebResponse;
+            using (HttpWebResponse response = await Task.Factory.FromAsync(request.BeginGetResponse, request.EndGetResponse, null) as HttpWebResponse)
+            using (StreamReader streamReader = new StreamReader(response.GetResponseStream()))
+            {
+                string content = await streamReader.ReadToEndAsync();
+                RotationData data = JsonConvert.DeserializeObject<RotationData>(content, new SequenceConverter());
+                data.URL = url;
+                Properties.Settings.Default.lastURL = data.URL;
+                Properties.Settings.Default.Save();
 
-            StreamReader streamReader = new StreamReader(response.GetResponseStream());
-            string content = await streamReader.ReadToEndAsync();
-            RotationData data = JsonConvert.DeserializeObject<RotationData>(content, new SequenceConverter());
-            data.URL = url;
-            Properties.Settings.Default.lastURL = data.URL;
-            Properties.Settings.Default.Save();
-
-            return data;
+                return data;
+            }
         }
 
         private void StartBtn_Click(object sender, EventArgs e)

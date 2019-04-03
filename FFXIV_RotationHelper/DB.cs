@@ -1,4 +1,5 @@
 ﻿using CsvHelper;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -18,52 +19,65 @@ namespace FFXIV_RotationHelper
         private static Dictionary<int, int> table;
         public static bool IsLoaded { get; private set; }
 
-        private static readonly Regex skillRegex = new Regex(@"\d+:{icon:[^}]*}");
-
         public static async Task LoadAsync()
         {
-            #region Table
-            using (StringReader reader = new StringReader(Properties.Resources.ActionTable))
-            using (CsvReader csv = new CsvReader(reader))
-            {
-                table = new Dictionary<int, int>();
-                await csv.ReadAsync();
-                while (await csv.ReadAsync())
-                {
-                    try
-                    {
-                        string[] records = csv.Context.Record;
-                        int code = int.Parse(records[0], NumberStyles.HexNumber);
-                        int dbCode = int.Parse(records[1]);
+            await LoadTable();
+            await LoadDB();
 
-                        if (code != dbCode && !table.ContainsKey(code))
-                            table.Add(code, dbCode);
-                    }
-                    catch
+            IsLoaded = true;
+        }
+
+        private static async Task LoadTable()
+        {
+            HttpWebRequest request = WebRequest.Create("https://raw.githubusercontent.com/Elysia-ff/FFXIV_RotationHelper-resources/master/Output/ActionTable/ActionTable.csv") as HttpWebRequest;
+            using (HttpWebResponse response = await Task.Factory.FromAsync(request.BeginGetResponse, request.EndGetResponse, null) as HttpWebResponse)
+            using (StreamReader streamReader = new StreamReader(response.GetResponseStream()))
+            {
+                string content = await streamReader.ReadToEndAsync();
+
+                using (StringReader reader = new StringReader(content))
+                using (CsvReader csv = new CsvReader(reader))
+                {
+                    table = new Dictionary<int, int>();
+                    await csv.ReadAsync();
+                    while (await csv.ReadAsync())
                     {
+                        try
+                        {
+                            string[] records = csv.Context.Record;
+                            int code = int.Parse(records[0], NumberStyles.HexNumber);
+                            int dbCode = int.Parse(records[1]);
+
+                            if (code != dbCode && !table.ContainsKey(code))
+                                table.Add(code, dbCode);
+                        }
+                        catch
+                        {
+                        }
                     }
                 }
             }
-            #endregion
+        }
 
-            #region DB
-            HttpWebRequest request = WebRequest.Create("http://ffxivrotations.com/db3.js") as HttpWebRequest;
-            HttpWebResponse response = await Task.Factory.FromAsync(request.BeginGetResponse, request.EndGetResponse, null) as HttpWebResponse;
-            StreamReader streamReader = new StreamReader(response.GetResponseStream());
-            string content = await streamReader.ReadToEndAsync();
-
-            data = new Dictionary<int, SkillData>();
-            MatchCollection mc = skillRegex.Matches(content);
-            foreach (Match match in mc)
+        private static async Task LoadDB()
+        {
+            HttpWebRequest request = WebRequest.Create("https://raw.githubusercontent.com/Elysia-ff/FFXIV_RotationHelper-resources/master/Output/DB/db.json") as HttpWebRequest;
+            using (HttpWebResponse response = await Task.Factory.FromAsync(request.BeginGetResponse, request.EndGetResponse, null) as HttpWebResponse)
+            using (StreamReader streamReader = new StreamReader(response.GetResponseStream()))
             {
-                SkillData skillData = new SkillData();
-                skillData.Load(match.Value);
+                string content = await streamReader.ReadToEndAsync();
 
-                data.Add(skillData.Idx, skillData);
+                List<SkillData> dataList = JsonConvert.DeserializeObject<List<SkillData>>(content);
+                data = new Dictionary<int, SkillData>();
+                for (int i = 0; i < dataList.Count; ++i)
+                {
+                    data.Add(dataList[i].Idx, dataList[i]);
+                }
             }
-            #endregion
 
-            IsLoaded = true;
+#if DEBUG
+            Debug.WriteLine("Skill Count : " + data.Count);
+#endif
         }
 
         public static List<SkillData> Get(List<int> sequence)
