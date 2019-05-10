@@ -45,6 +45,54 @@ namespace FFXIV_RotationHelper
             ActGlobals.oFormActMain.BeforeLogLineRead += OFormActMain_BeforeLogLineRead;
 
             SetStatusLabel();
+
+            System.Timers.Timer timer = new System.Timers.Timer(6000);
+            timer.Elapsed += delegate
+            {
+                timer.Close();
+                Initailize();
+            };
+            timer.Start();
+        }
+
+        private void Initailize()
+        {
+            if (!string.IsNullOrEmpty(PlayerData.Instance.Name))
+                return;
+
+            Invoke(() =>
+            {
+                IActPluginV1 o = null;
+                foreach (var x in ActGlobals.oFormActMain.ActPlugins)
+                {
+                    if (x.pluginFile.Name.ToUpper() == "FFXIV_ACT_Plugin.dll".ToUpper() && x.cbEnabled.Checked)
+                    {
+                        o = x.pluginObj;
+                        if (o != null)
+                        {
+                            try
+                            {
+                                var pluginType = o.GetType();
+
+                                o.DeInitPlugin();
+                                x.pluginObj = o = null;
+                                System.Threading.Thread.Sleep(500);
+                                x.tpPluginSpace.Controls.Clear();
+                                System.Threading.Thread.Sleep(500);
+
+                                IActPluginV1 main = (IActPluginV1)Activator.CreateInstance(pluginType);
+
+                                main.InitPlugin(x.tpPluginSpace, x.lblPluginStatus);
+                                x.pluginObj = o = main;
+                            }
+                            catch (Exception)
+                            {
+
+                            }
+                        }
+                    }
+                }
+            });
         }
 
         public void DeInitPlugin()
@@ -106,8 +154,8 @@ namespace FFXIV_RotationHelper
             using (StreamReader streamReader = new StreamReader(response.GetResponseStream()))
             {
                 string content = await streamReader.ReadToEndAsync();
-                RotationData data = JsonConvert.DeserializeObject<RotationData>(content, new SequenceConverter());
-                data.URL = url;
+                RotationData data = JsonConvert.DeserializeObject<RotationData>(content);
+                data.Initialize(url);
                 Properties.Settings.Default.lastURL = data.URL;
                 Properties.Settings.Default.Save();
 
@@ -224,6 +272,26 @@ namespace FFXIV_RotationHelper
             if (rotationWindow.Visible)
             {
                 rotationWindow.SetSize(offsetStr);
+            }
+        }
+
+        public static void Invoke(Action action)
+        {
+            if (ActGlobals.oFormActMain != null &&
+                ActGlobals.oFormActMain.IsHandleCreated &&
+                !ActGlobals.oFormActMain.IsDisposed)
+            {
+                if (ActGlobals.oFormActMain.InvokeRequired)
+                {
+                    ActGlobals.oFormActMain.Invoke((MethodInvoker)delegate
+                    {
+                        action();
+                    });
+                }
+                else
+                {
+                    action();
+                }
             }
         }
 
