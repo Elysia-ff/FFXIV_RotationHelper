@@ -82,5 +82,17 @@ namespace FFXIV_RotationHelper.Properties {
                 this["lastURL"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string SavedURLs {
+            get {
+                return ((string)(this["SavedURLs"]));
+            }
+            set {
+                this["SavedURLs"] = value;
+            }
+        }
     }
 }

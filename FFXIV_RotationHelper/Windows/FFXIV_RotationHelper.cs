@@ -20,10 +20,12 @@ namespace FFXIV_RotationHelper
     {
         private Label lblStatus;
         private RotationWindow rotationWindow;
+        private SaveURLForm saveURLForm;
 
         public FFXIV_RotationHelper()
         {
             rotationWindow = new RotationWindow();
+            saveURLForm = new SaveURLForm(this);
 
             InitializeComponent();
             isClickthroughCheckBox.Checked = Properties.Settings.Default.Clickthrough;
@@ -95,6 +97,26 @@ namespace FFXIV_RotationHelper
             });
         }
 
+        public static void Invoke(Action action)
+        {
+            if (ActGlobals.oFormActMain != null &&
+                ActGlobals.oFormActMain.IsHandleCreated &&
+                !ActGlobals.oFormActMain.IsDisposed)
+            {
+                if (ActGlobals.oFormActMain.InvokeRequired)
+                {
+                    ActGlobals.oFormActMain.Invoke((MethodInvoker)delegate
+                    {
+                        action();
+                    });
+                }
+                else
+                {
+                    action();
+                }
+            }
+        }
+
         public void DeInitPlugin()
         {
             lblStatus.Text = "No Status";
@@ -138,9 +160,20 @@ namespace FFXIV_RotationHelper
             SetStatusLabel();
         }
 
+        public void SetURL(string text)
+        {
+            urlTextBox.Text = text;
+        }
+
         private void URLTextBox_TextChanged(object sender, EventArgs e)
         {
             loadBtn.Enabled = !rotationWindow.IsLoadedURL.Equals(urlTextBox.Text);
+        }
+
+        private void SaveBtn_Click(object sender, EventArgs e)
+        {
+            saveURLForm.Location = Location;
+            saveURLForm.ShowDialog();
         }
 
         private async Task<RotationData> GetRotationAsync(string url)
@@ -272,26 +305,6 @@ namespace FFXIV_RotationHelper
             if (rotationWindow.Visible)
             {
                 rotationWindow.SetSize(offsetStr);
-            }
-        }
-
-        public static void Invoke(Action action)
-        {
-            if (ActGlobals.oFormActMain != null &&
-                ActGlobals.oFormActMain.IsHandleCreated &&
-                !ActGlobals.oFormActMain.IsDisposed)
-            {
-                if (ActGlobals.oFormActMain.InvokeRequired)
-                {
-                    ActGlobals.oFormActMain.Invoke((MethodInvoker)delegate
-                    {
-                        action();
-                    });
-                }
-                else
-                {
-                    action();
-                }
             }
         }
 

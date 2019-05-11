@@ -45,6 +45,7 @@
             this.restartCheckBox = new System.Windows.Forms.CheckBox();
             this.sizeComboBox = new System.Windows.Forms.ComboBox();
             this.sizeTitle = new System.Windows.Forms.Label();
+            this.saveBtn = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // urlTextBox
@@ -203,10 +204,21 @@
             this.sizeTitle.TabIndex = 15;
             this.sizeTitle.Text = "%";
             // 
+            // saveBtn
+            // 
+            this.saveBtn.Location = new System.Drawing.Point(596, 16);
+            this.saveBtn.Name = "saveBtn";
+            this.saveBtn.Size = new System.Drawing.Size(93, 23);
+            this.saveBtn.TabIndex = 16;
+            this.saveBtn.Text = "Saved URLs";
+            this.saveBtn.UseVisualStyleBackColor = true;
+            this.saveBtn.Click += new System.EventHandler(this.SaveBtn_Click);
+            // 
             // FFXIV_RotationHelper
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.saveBtn);
             this.Controls.Add(this.sizeTitle);
             this.Controls.Add(this.sizeComboBox);
             this.Controls.Add(this.restartCheckBox);
@@ -250,5 +262,6 @@
         private System.Windows.Forms.CheckBox restartCheckBox;
         private System.Windows.Forms.ComboBox sizeComboBox;
         private System.Windows.Forms.Label sizeTitle;
+        private System.Windows.Forms.Button saveBtn;
     }
 }

@@ -116,6 +116,12 @@
     </Compile>
     <Compile Include="Data\SkillData.cs" />
     <Compile Include="URLConverter.cs" />
+    <Compile Include="Windows\SaveURLForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Windows\SaveURLForm.Designer.cs">
+      <DependentUpon>SaveURLForm.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -131,6 +137,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Windows\RotationWindow.resx">
       <DependentUpon>RotationWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Windows\SaveURLForm.resx">
+      <DependentUpon>SaveURLForm.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
