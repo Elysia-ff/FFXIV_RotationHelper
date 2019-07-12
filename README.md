@@ -3,12 +3,13 @@ Helps to practice DPS rotation.
 
 Preview : https://youtu.be/vLDzNC5nNPo
 
+### Notice ::
+Not support for potions, gatherer nor crafter.
+
+I couldn't tested if this plugin is working properly because I'm on kor server which isn't updated for ShB.
+
+Let me know if there's something wrong.
+
 ### Integrating ::
 
 Plugins -> Plugin Listing -> Browse... -> Select FFXIV_RotationHelper.dll -> Add/Enabled Plugin
-
-# TODO
-
-1. Update ActionTable.csv for patch 5.x. (have to support both 4.x and 5.x for a while
-
-2. Find best practice to convert js to c#.
