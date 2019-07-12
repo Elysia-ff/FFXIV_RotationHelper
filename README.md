@@ -1,4 +1,6 @@
 # FFXIV_RotationHelper
+<b>The latest supported version : 5.x</b>
+
 Helps to practice DPS rotation.
 
 Preview : https://youtu.be/vLDzNC5nNPo
