@@ -50,9 +50,9 @@ namespace FFXIV_RotationHelper
                 if (Code <= 0)
                     return false;
 
-                //     0  1                                 2        3           4 5  6    7    8
-                // Pet 03|2019-01-13T00:55:58.3230000+09:00|40019742|요정 에오스|0|46|a8d8|2ee0|100d3d81|918bd70cb1e0ccbed68d3b600ac8dd18
-                uint summonerCode = uint.Parse(log[8], NumberStyles.HexNumber);
+                //     0  1                                 2        3   4 5  6
+                // Pet 03|2019-07-07T00:17:44.7630000+02:00|4000ad7d|Eos|0|4f|100d3d81|0||1398|1008|67129|67129|10000|10000|0|0|-40.38065|19.00028|84.19518|2.220902||d2655803925a7acc840d57a7b9be2f8c
+                uint summonerCode = uint.Parse(log[6], NumberStyles.HexNumber);
                 if (Code == summonerCode)
                 {
                     PetCode = uint.Parse(log[2], NumberStyles.HexNumber);
@@ -75,9 +75,10 @@ namespace FFXIV_RotationHelper
                 if (Code <= 0 || PetCode <= 0)
                     return false;
 
-                //     0  1                                 2        3           4 5  6    7    8
-                // Pet 04|2019-03-29T21:54:57.2570000+09:00|40010d5e|자동포탑 룩|0|46|ca05|2ee0|100d3d81|0||25deed966a547a062f45df5388bc6a1c
-                uint summonerCode = uint.Parse(log[8], NumberStyles.HexNumber);
+                //     0  1                                 2        3      4 5  6
+                // Pet 03|2019-07-07T00:17:46.1030000+02:00|4000ad62|Selene|0|50|100d3d81|0||1399|1009|69948|69948|10000|10000|0|0|-49.31417|23.3655|84.19518|-1.111434||e1f498150dadecce15670dc1a92b8287
+
+                uint summonerCode = uint.Parse(log[6], NumberStyles.HexNumber);
                 uint logCode = uint.Parse(log[2], NumberStyles.HexNumber);
                 if (Code == summonerCode && PetCode == logCode)
                 {
