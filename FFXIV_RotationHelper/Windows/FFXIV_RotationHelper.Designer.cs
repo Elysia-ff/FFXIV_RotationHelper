@@ -34,6 +34,8 @@
 #if DEBUG
             this.debugTextBox = new System.Windows.Forms.TextBox();
             this.debugLabel = new System.Windows.Forms.Label();
+            this.logLineBox = new System.Windows.Forms.TextBox();
+            this.logInsertBtn = new System.Windows.Forms.Button();
 #endif
             this.nameTitle = new System.Windows.Forms.Label();
             this.nameText = new System.Windows.Forms.Label();
@@ -95,6 +97,23 @@
             this.debugLabel.Size = new System.Drawing.Size(11, 12);
             this.debugLabel.TabIndex = 4;
             this.debugLabel.Text = "=";
+            // 
+            // logLineBox
+            // 
+            this.logLineBox.Location = new System.Drawing.Point(16, 303);
+            this.logLineBox.Name = "logLineBox";
+            this.logLineBox.Size = new System.Drawing.Size(285, 21);
+            this.logLineBox.TabIndex = 17;
+            // 
+            // logInsertBtn
+            // 
+            this.logInsertBtn.Location = new System.Drawing.Point(307, 301);
+            this.logInsertBtn.Name = "logInsertBtn";
+            this.logInsertBtn.Size = new System.Drawing.Size(75, 23);
+            this.logInsertBtn.TabIndex = 18;
+            this.logInsertBtn.Text = "Insert";
+            this.logInsertBtn.UseVisualStyleBackColor = true;
+            this.logInsertBtn.Click += new System.EventHandler(this.LogInsertBtn_Click);
 #endif
             // 
             // nameTitle
@@ -218,6 +237,12 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+#if DEBUG
+            this.Controls.Add(this.debugLabel);
+            this.Controls.Add(this.debugTextBox);
+            this.Controls.Add(this.logInsertBtn);
+            this.Controls.Add(this.logLineBox);
+#endif
             this.Controls.Add(this.saveBtn);
             this.Controls.Add(this.sizeTitle);
             this.Controls.Add(this.sizeComboBox);
@@ -229,10 +254,6 @@
             this.Controls.Add(this.petTitle);
             this.Controls.Add(this.nameText);
             this.Controls.Add(this.nameTitle);
-#if DEBUG
-            this.Controls.Add(this.debugLabel);
-            this.Controls.Add(this.debugTextBox);
-#endif
             this.Controls.Add(this.startBtn);
             this.Controls.Add(this.loadBtn);
             this.Controls.Add(this.urlTextBox);
@@ -251,6 +272,8 @@
 #if DEBUG
         private System.Windows.Forms.TextBox debugTextBox;
         private System.Windows.Forms.Label debugLabel;
+        private System.Windows.Forms.TextBox logLineBox;
+        private System.Windows.Forms.Button logInsertBtn;
 #endif
         private System.Windows.Forms.Label nameTitle;
         private System.Windows.Forms.Label nameText;

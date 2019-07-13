@@ -43,6 +43,10 @@ namespace FFXIV_RotationHelper
 
             urlTextBox.Text = Properties.Settings.Default.lastURL.ToString();
 
+#if USE_ON_LOG_LINE
+            ActGlobals.oFormActMain.OnLogLineRead -= OFormActMain_OnLogLineRead;
+            ActGlobals.oFormActMain.OnLogLineRead += OFormActMain_OnLogLineRead;
+#endif
             ActGlobals.oFormActMain.BeforeLogLineRead -= OFormActMain_BeforeLogLineRead;
             ActGlobals.oFormActMain.BeforeLogLineRead += OFormActMain_BeforeLogLineRead;
 
@@ -121,10 +125,13 @@ namespace FFXIV_RotationHelper
         {
             lblStatus.Text = "No Status";
 
+#if USE_ON_LOG_LINE
+            ActGlobals.oFormActMain.OnLogLineRead -= OFormActMain_OnLogLineRead;
+#endif
             ActGlobals.oFormActMain.BeforeLogLineRead -= OFormActMain_BeforeLogLineRead;
             PlayerData.Free();
         }
-        #endregion
+#endregion
 
         private async void LoadBtn_Click(object sender, EventArgs e)
         {
@@ -213,6 +220,29 @@ namespace FFXIV_RotationHelper
             }
         }
 
+#if USE_ON_LOG_LINE
+        private void OFormActMain_OnLogLineRead(bool isImport, LogLineEventArgs logInfo)
+        {
+            if (logInfo.logLine.Length <= 18)
+                return;
+
+            string logType = logInfo.logLine.Substring(15, 3);
+            if (logType.Equals("15:") || logType.Equals("16:"))
+            {
+                string[] logLine = logInfo.logLine.Split(':');
+
+                LogData log = new LogData(logLine, false);
+                if (log.IsValid)
+                {
+                    if (rotationWindow.Visible)
+                    {
+                        rotationWindow.OnActionCasted(log);
+                    }
+                }
+            }
+        }
+#endif
+
         private void OFormActMain_BeforeLogLineRead(bool isImport, LogLineEventArgs logInfo)
         {
             string[] logLine = logInfo.logLine.Split('|');
@@ -246,7 +276,7 @@ namespace FFXIV_RotationHelper
 
                 case LogDefine.Type.Ability:
                 case LogDefine.Type.AOEAbility:
-                    LogData log = new LogData(logLine);
+                    LogData log = new LogData(logLine, true);
                     if (log.IsValid)
                     {
                         if (rotationWindow.Visible)
@@ -332,6 +362,15 @@ namespace FFXIV_RotationHelper
             }
 
             debugLabel.Text = stringBuilder.ToString();
+        }
+
+        private void LogInsertBtn_Click(object sender, EventArgs e)
+        {
+            LogLineEventArgs args = new LogLineEventArgs(logLineBox.Text, 0, DateTime.Now, string.Empty, true);
+#if USE_ON_LOG_LINE
+            OFormActMain_OnLogLineRead(false, args);
+#endif
+            OFormActMain_BeforeLogLineRead(false, args);
         }
 #endif
     }
