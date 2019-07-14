@@ -273,7 +273,7 @@ namespace FFXIV_RotationHelper
                         petText.Text = "Not Found";
                     }
                     break;
-
+#if !USE_ON_LOG_LINE
                 case LogDefine.Type.Ability:
                 case LogDefine.Type.AOEAbility:
                     LogData log = new LogData(logLine, true);
@@ -285,6 +285,7 @@ namespace FFXIV_RotationHelper
                         }
                     }
                     break;
+#endif
             }
         }
 
