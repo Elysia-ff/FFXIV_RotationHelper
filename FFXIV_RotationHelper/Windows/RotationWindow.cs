@@ -1,13 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace FFXIV_RotationHelper
@@ -18,11 +11,11 @@ namespace FFXIV_RotationHelper
 
         private RotationData loadedData;
         private List<SkillData> skillList;
-        private List<PictureBox> pictureList;
+        private readonly List<PictureBox> pictureList;
         private int currentIdx = 0;
 
         public bool IsLoaded { get { return loadedData != null; } }
-        public string IsLoadedURL { get { if (!IsLoaded) return string.Empty; return loadedData.URL; } }
+        public string IsLoadedURL { get { return IsLoaded ? loadedData.URL : string.Empty; } }
         public bool IsPlaying { get; private set; }
 
         private const int interval = 20;
@@ -144,7 +137,9 @@ namespace FFXIV_RotationHelper
         public void OnActionCasted(LogData logData)
         {
             if (currentIdx >= skillList.Count)
+            {
                 return;
+            }
 
             SkillData skillData = skillList[currentIdx];
             if (skillData.Idx == logData.DBCode)

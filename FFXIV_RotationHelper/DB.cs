@@ -1,14 +1,9 @@
 ﻿using CsvHelper;
 using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace FFXIV_RotationHelper
@@ -39,6 +34,7 @@ namespace FFXIV_RotationHelper
                 using (CsvReader csv = new CsvReader(reader))
                 {
                     table = new Dictionary<int, int>();
+
                     await csv.ReadAsync();
                     while (await csv.ReadAsync())
                     {
@@ -49,7 +45,9 @@ namespace FFXIV_RotationHelper
                             int dbCode = int.Parse(records[1]);
 
                             if (code != dbCode && !table.ContainsKey(code))
+                            {
                                 table.Add(code, dbCode);
+                            }
                         }
                         catch
                         {
@@ -85,12 +83,13 @@ namespace FFXIV_RotationHelper
             List<SkillData> list = new List<SkillData>();
 
             if (sequence == null || sequence.Count <= 0)
+            {
                 return list;
+            }
 
-            SkillData skillData = null;
             for (int i = 0; i < sequence.Count; ++i)
             {
-                if (data.TryGetValue(sequence[i], out skillData))
+                if (data.TryGetValue(sequence[i], out SkillData skillData))
                 {
                     list.Add(skillData);
                 }
@@ -102,7 +101,9 @@ namespace FFXIV_RotationHelper
         public static int ConvertCode(int code)
         {
             if (table.ContainsKey(code))
+            {
                 return table[code];
+            }
 
             return code;
         }
@@ -119,7 +120,9 @@ namespace FFXIV_RotationHelper
                 {
                     string str = kv.Value.Name.Replace(" ", "").ToLower();
                     if (str.Equals(actionName))
+                    {
                         list.Add(kv.Value);
+                    }
                 }
 
                 return list;

@@ -1,18 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace FFXIV_RotationHelper
 {
     public partial class SaveURLForm : Form
     {
-        private FFXIV_RotationHelper helper;
+        private readonly FFXIV_RotationHelper helper;
 
         private readonly char keySeparator = '\t';
         private readonly char valueSeparator = '\n';
@@ -33,7 +27,6 @@ namespace FFXIV_RotationHelper
             for (int i = 0; i < data.Length; ++i)
             {
                 string[] value = data[i].Split(valueSeparator);
-
                 if (value.Length >= 2)
                 {
                     string url = value[0];
@@ -57,7 +50,9 @@ namespace FFXIV_RotationHelper
             {
                 string url = ObjectToString(row[i].Cells[0].Value);
                 if (url.Length <= 0)
+                {
                     continue;
+                }
 
                 string memo = ObjectToString(row[i].Cells[1].Value);
 
@@ -106,7 +101,5 @@ namespace FFXIV_RotationHelper
                 LoadData();
             }
         }
-
-        
     }
 }

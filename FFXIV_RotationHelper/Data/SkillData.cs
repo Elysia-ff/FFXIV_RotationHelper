@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace FFXIV_RotationHelper
 {
@@ -23,7 +16,7 @@ namespace FFXIV_RotationHelper
 #if DEBUG
         public override string ToString()
         {
-            return string.Format("Idx:{0,-10}Name:{1}", Idx, Name);
+            return $"Idx : {Idx} // Name : {Name}";
         }
 #endif
     }

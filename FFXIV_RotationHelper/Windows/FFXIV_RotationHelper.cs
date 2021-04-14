@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -12,15 +8,14 @@ using System.Net;
 using System.IO;
 using Newtonsoft.Json;
 using System.Diagnostics;
-using System.Reflection;
 
 namespace FFXIV_RotationHelper
 {
     public partial class FFXIV_RotationHelper : UserControl, IActPluginV1
     {
         private Label lblStatus;
-        private RotationWindow rotationWindow;
-        private SaveURLForm saveURLForm;
+        private readonly RotationWindow rotationWindow;
+        private readonly SaveURLForm saveURLForm;
 
         public FFXIV_RotationHelper()
         {
@@ -43,87 +38,16 @@ namespace FFXIV_RotationHelper
 
             urlTextBox.Text = Properties.Settings.Default.lastURL.ToString();
 
-            ActGlobals.oFormActMain.OnLogLineRead -= OFormActMain_OnLogLineRead;
-            ActGlobals.oFormActMain.OnLogLineRead += OFormActMain_OnLogLineRead;
             ActGlobals.oFormActMain.BeforeLogLineRead -= OFormActMain_BeforeLogLineRead;
             ActGlobals.oFormActMain.BeforeLogLineRead += OFormActMain_BeforeLogLineRead;
 
-            SetStatusLabel();
-
-            System.Timers.Timer timer = new System.Timers.Timer(6000);
-            timer.Elapsed += delegate
-            {
-                timer.Close();
-                Initailize();
-            };
-            timer.Start();
-        }
-
-        private void Initailize()
-        {
-            if (!string.IsNullOrEmpty(PlayerData.Instance.Name))
-                return;
-
-            Invoke(() =>
-            {
-                IActPluginV1 o = null;
-                foreach (var x in ActGlobals.oFormActMain.ActPlugins)
-                {
-                    if (x.pluginFile.Name.ToUpper() == "FFXIV_ACT_Plugin.dll".ToUpper() && x.cbEnabled.Checked)
-                    {
-                        o = x.pluginObj;
-                        if (o != null)
-                        {
-                            try
-                            {
-                                var pluginType = o.GetType();
-
-                                o.DeInitPlugin();
-                                x.pluginObj = o = null;
-                                System.Threading.Thread.Sleep(500);
-                                x.tpPluginSpace.Controls.Clear();
-                                System.Threading.Thread.Sleep(500);
-
-                                IActPluginV1 main = (IActPluginV1)Activator.CreateInstance(pluginType);
-
-                                main.InitPlugin(x.tpPluginSpace, x.lblPluginStatus);
-                                x.pluginObj = o = main;
-                            }
-                            catch (Exception)
-                            {
-
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        public static void Invoke(Action action)
-        {
-            if (ActGlobals.oFormActMain != null &&
-                ActGlobals.oFormActMain.IsHandleCreated &&
-                !ActGlobals.oFormActMain.IsDisposed)
-            {
-                if (ActGlobals.oFormActMain.InvokeRequired)
-                {
-                    ActGlobals.oFormActMain.Invoke((MethodInvoker)delegate
-                    {
-                        action();
-                    });
-                }
-                else
-                {
-                    action();
-                }
-            }
+            UpdateStatusLabel();
         }
 
         public void DeInitPlugin()
         {
             lblStatus.Text = "No Status";
 
-            ActGlobals.oFormActMain.OnLogLineRead -= OFormActMain_OnLogLineRead;
             ActGlobals.oFormActMain.BeforeLogLineRead -= OFormActMain_BeforeLogLineRead;
             PlayerData.Free();
         }
@@ -146,7 +70,9 @@ namespace FFXIV_RotationHelper
 
             string url = urlTextBox.Text;
             if (url == null || url.Length <= 0)
+            {
                 return;
+            }
 
             loadBtn.Enabled = false;
             startBtn.Enabled = false;
@@ -160,7 +86,7 @@ namespace FFXIV_RotationHelper
             }
 
             startBtn.Enabled = true;
-            SetStatusLabel();
+            UpdateStatusLabel();
         }
 
         public void SetURL(string text)
@@ -182,7 +108,9 @@ namespace FFXIV_RotationHelper
         private async Task<RotationData> GetRotationAsync(string url)
         {
             if (!DB.IsLoaded)
+            {
                 await DB.LoadAsync();
+            }
 
             string convertedURL = URLConverter.Convert(url);
             HttpWebRequest request = WebRequest.Create(convertedURL) as HttpWebRequest;
@@ -192,6 +120,7 @@ namespace FFXIV_RotationHelper
                 string content = await streamReader.ReadToEndAsync();
                 RotationData data = JsonConvert.DeserializeObject<RotationData>(content);
                 data.Initialize(url);
+
                 Properties.Settings.Default.lastURL = data.URL;
                 Properties.Settings.Default.Save();
 
@@ -216,31 +145,13 @@ namespace FFXIV_RotationHelper
             }
         }
 
-        private void OFormActMain_OnLogLineRead(bool isImport, LogLineEventArgs logInfo)
-        {
-            string logLine = logInfo.logLine;
-            if (logLine.Length <= 18)
-                return;
-
-            string logType = logLine.Substring(15, 3);
-            if (logType.Equals("15:") || logType.Equals("16:"))
-            {
-                LogData log = new LogData(logLine);
-                if (log.IsValid)
-                {
-                    if (rotationWindow.Visible)
-                    {
-                        rotationWindow.OnActionCasted(log);
-                    }
-                }
-            }
-        }
-
         private void OFormActMain_BeforeLogLineRead(bool isImport, LogLineEventArgs logInfo)
         {
-            string[] logLine = logInfo.logLine.Split('|');
+            string[] logLine = logInfo.originalLogLine.Split('|');
             if (!int.TryParse(logLine[0], out int logCode))
+            {
                 return;
+            }
 
             LogDefine.Type logType = (LogDefine.Type)logCode;
             switch (logType)
@@ -249,7 +160,7 @@ namespace FFXIV_RotationHelper
                     if (PlayerData.Instance.SetPlayer(logLine))
                     {
                         nameText.Text = PlayerData.Instance.Name;
-                        SetStatusLabel();
+                        UpdateStatusLabel();
                     }
                     break;
 
@@ -266,17 +177,13 @@ namespace FFXIV_RotationHelper
                         petText.Text = "Not Found";
                     }
                     break;
-//  21|2019-10-07T21:37:30.6290000+09:00|10243753|Ellie Nyang|6E|Bloodletter|40006C8C|Striking Dummy|720103|E6D0000|0|0|0|0|0|0|0|0|0|0|0|0|0|0|7400000|7400000|0|0|0|1000|-68.08743|-25.89563|32|0.6953354|52004|52004|10000|10000|0|1000|-86.30105|-40.02085|29.92516|0.8719425|000185E7|8836717957511b2462d3d38fee00691f
-//  [21:37:30.629] 15:10243753:Ellie Nyang:6E:Bloodletter:40006C8C:Striking Dummy:720103:E6D0000:0:0:0:0:0:0:0:0:0:0:0:0:0:0:7400000:7400000:0:0:0:1000:-68.08743:-25.89563:32:0.6953354:52004:52004:10000:10000:0:1000:-86.30105:-40.02085:29.92516:0.8719425:000185E7
+
                 case LogDefine.Type.Ability:
                 case LogDefine.Type.AOEAbility:
                     LogData log = new LogData(logLine);
-                    if (log.IsValid)
+                    if (log.IsValid && rotationWindow.Visible)
                     {
-                        if (rotationWindow.Visible)
-                        {
-                            rotationWindow.OnActionCasted(log);
-                        }
+                        rotationWindow.OnActionCasted(log);
                     }
                     break;
             }
@@ -287,7 +194,7 @@ namespace FFXIV_RotationHelper
             Process.Start("http://ffxivrotations.com");
         }
 
-        private void SetStatusLabel()
+        private void UpdateStatusLabel()
         {
             if (!rotationWindow.IsLoaded)
             {
@@ -348,7 +255,10 @@ namespace FFXIV_RotationHelper
             }
 
             if (stringBuilder.Length > 0)
+            {
                 stringBuilder.Remove(stringBuilder.Length - 1, 1);
+            }
+
             if (idxStr.Length > 0)
             {
                 idxStr.Remove(idxStr.Length - 1, 1);
@@ -361,7 +271,6 @@ namespace FFXIV_RotationHelper
         private void LogInsertBtn_Click(object sender, EventArgs e)
         {
             LogLineEventArgs args = new LogLineEventArgs(logLineBox.Text, 0, DateTime.Now, string.Empty, true);
-            OFormActMain_OnLogLineRead(false, args);
             OFormActMain_BeforeLogLineRead(false, args);
         }
 #endif
