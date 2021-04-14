@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using FFXIV_RotationHelper.StrongType;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -17,12 +18,16 @@ namespace FFXIV_RotationHelper
         [JsonProperty("sequence")]
         public string SequenceStr { get; set; }
 
-        public List<int> Sequence { get; private set; }
+        public List<DBIdx> Sequence { get; private set; }
 
         public void Initialize(string url)
         {
             URL = url;
-            Sequence = SequenceStr.Split(',').ToList().ConvertAll((s) => int.Parse(s));
+            Sequence = SequenceStr.Split(',')
+                .ToList()
+                .ConvertAll((s) => (DBIdx)int.Parse(s))
+                .Where((i) => !DB.IsIgnoreSet(i))
+                .ToList();
         }
     }
 }

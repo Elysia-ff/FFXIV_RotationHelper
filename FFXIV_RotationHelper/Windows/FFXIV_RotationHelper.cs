@@ -49,7 +49,6 @@ namespace FFXIV_RotationHelper
             lblStatus.Text = "No Status";
 
             ActGlobals.oFormActMain.BeforeLogLineRead -= OFormActMain_BeforeLogLineRead;
-            PlayerData.Free();
         }
         #endregion
 
@@ -157,22 +156,22 @@ namespace FFXIV_RotationHelper
             switch (logType)
             {
                 case LogDefine.Type.ChangePrimaryPlayer:
-                    if (PlayerData.Instance.SetPlayer(logLine))
+                    if (PlayerData.SetPlayer(logLine))
                     {
-                        nameText.Text = PlayerData.Instance.Name;
+                        nameText.Text = PlayerData.Name;
                         UpdateStatusLabel();
                     }
                     break;
 
                 case LogDefine.Type.AddCombatant:
-                    if (PlayerData.Instance.SetPet(logLine))
+                    if (PlayerData.SetPet(logLine))
                     {
-                        petText.Text = PlayerData.Instance.PetName;
+                        petText.Text = PlayerData.PetName;
                     }
                     break;
 
                 case LogDefine.Type.RemoveCombatant:
-                    if (PlayerData.Instance.RemovePet(logLine))
+                    if (PlayerData.RemovePet(logLine))
                     {
                         petText.Text = "Not Found";
                     }
@@ -200,7 +199,7 @@ namespace FFXIV_RotationHelper
             {
                 statusLabel.Text = "Not initialized - Please load your rotation.";
             }
-            else if (string.IsNullOrEmpty(PlayerData.Instance.Name))
+            else if (string.IsNullOrEmpty(PlayerData.Name))
             {
                 statusLabel.Text = "Not found player info. - Please restart the ACT.";
             }
@@ -250,7 +249,7 @@ namespace FFXIV_RotationHelper
                 stringBuilder.Append(list[i]);
                 stringBuilder.Append("\n");
 
-                idxStr.Append(list[i].Idx);
+                idxStr.Append((int)list[i].DBIdx);
                 idxStr.Append(",");
             }
 

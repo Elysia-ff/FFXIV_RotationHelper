@@ -1,5 +1,5 @@
-﻿using CsvHelper;
-using Newtonsoft.Json;
+﻿using FFXIV_RotationHelper.StrongType;
+using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -10,66 +10,65 @@ namespace FFXIV_RotationHelper
 {
     public static class DB
     {
-        private static Dictionary<int, SkillData> data;
-        private static Dictionary<int, int> table;
+        private static readonly Dictionary<DBIdx, SkillData> data = new Dictionary<DBIdx, SkillData>();
+        private static readonly Dictionary<GameIdx, DBIdx> gameToDb = new Dictionary<GameIdx, DBIdx>();
+        private static readonly HashSet<DBIdx> ignoreSet = new HashSet<DBIdx>();
+
         public static bool IsLoaded { get; private set; }
 
         public static async Task LoadAsync()
         {
-            await LoadTable();
             await LoadDB();
 
             IsLoaded = true;
         }
 
-        private static async Task LoadTable()
+        private static async Task LoadDB()
         {
-            HttpWebRequest request = WebRequest.Create("https://raw.githubusercontent.com/Elysia-ff/FFXIV_RotationHelper-resources/master/Output/ActionTable/ActionTable.csv") as HttpWebRequest;
+            HttpWebRequest request = WebRequest.Create("https://ffxivrotations.com/db.json") as HttpWebRequest;
             using (HttpWebResponse response = await Task.Factory.FromAsync(request.BeginGetResponse, request.EndGetResponse, null) as HttpWebResponse)
             using (StreamReader streamReader = new StreamReader(response.GetResponseStream()))
             {
                 string content = await streamReader.ReadToEndAsync();
-
-                using (StringReader reader = new StringReader(content))
-                using (CsvReader csv = new CsvReader(reader))
+                JObject jObject = JObject.Parse(content);
+                
+                if (jObject.TryGetValue("skills", out JToken skills))
                 {
-                    table = new Dictionary<int, int>();
-
-                    await csv.ReadAsync();
-                    while (await csv.ReadAsync())
+                    foreach (JProperty jData in skills.Children<JProperty>())
                     {
-                        try
+                        if (string.IsNullOrEmpty(jData.Value.Value<string>("deprecated")))
                         {
-                            string[] records = csv.Context.Record;
-                            int code = int.Parse(records[0]);
-                            int dbCode = int.Parse(records[1]);
+                            SkillData skillData = new SkillData(jData);
+                            data.Add(skillData.DBIdx, skillData);
 
-                            if (code != dbCode && !table.ContainsKey(code))
+                            // TODO :: adjust duplicated game idxes 
+                            if (gameToDb.ContainsKey(skillData.GameIdx))
                             {
-                                table.Add(code, dbCode);
+                                // game : db
+
+                                // 7423 : 802
+                                // 7423 : 12021
+                                // "Aetherpact"
+
+                                // 167 : 167
+                                // 167 : 12149
+                                // "Energy Drain"
                             }
-                        }
-                        catch
-                        {
+                            else
+                            {
+                                gameToDb.Add(skillData.GameIdx, skillData.DBIdx);
+                            }
                         }
                     }
                 }
-            }
-        }
 
-        private static async Task LoadDB()
-        {
-            HttpWebRequest request = WebRequest.Create("https://raw.githubusercontent.com/Elysia-ff/FFXIV_RotationHelper-resources/master/Output/DB/db.json") as HttpWebRequest;
-            using (HttpWebResponse response = await Task.Factory.FromAsync(request.BeginGetResponse, request.EndGetResponse, null) as HttpWebResponse)
-            using (StreamReader streamReader = new StreamReader(response.GetResponseStream()))
-            {
-                string content = await streamReader.ReadToEndAsync();
-
-                List<SkillData> dataList = JsonConvert.DeserializeObject<List<SkillData>>(content);
-                data = new Dictionary<int, SkillData>();
-                for (int i = 0; i < dataList.Count; ++i)
+                if (jObject.TryGetValue("misc", out JToken misc))
                 {
-                    data.Add(dataList[i].Idx, dataList[i]);
+                    foreach (JValue jValue in misc.Children<JValue>())
+                    {
+                        int idx = jValue.Value<int>();
+                        ignoreSet.Add(new DBIdx(idx));
+                    }
                 }
             }
 
@@ -78,7 +77,7 @@ namespace FFXIV_RotationHelper
 #endif
         }
 
-        public static List<SkillData> Get(List<int> sequence)
+        public static List<SkillData> Get(List<DBIdx> sequence)
         {
             List<SkillData> list = new List<SkillData>();
 
@@ -98,14 +97,19 @@ namespace FFXIV_RotationHelper
             return list;
         }
 
-        public static int ConvertCode(int code)
+        public static DBIdx Convert(GameIdx gameIdx)
         {
-            if (table.ContainsKey(code))
+            if (gameToDb.ContainsKey(gameIdx))
             {
-                return table[code];
+                return gameToDb[gameIdx];
             }
 
-            return code;
+            return (DBIdx)(int)gameIdx;
+        }
+
+        public static bool IsIgnoreSet(DBIdx dBIdx)
+        {
+            return ignoreSet.Contains(dBIdx);
         }
 
 #if DEBUG
@@ -116,7 +120,7 @@ namespace FFXIV_RotationHelper
                 actionName = actionName.Replace(" ", "").ToLower();
 
                 List<SkillData> list = new List<SkillData>();
-                foreach (KeyValuePair<int, SkillData> kv in data)
+                foreach (KeyValuePair<DBIdx, SkillData> kv in data)
                 {
                     string str = kv.Value.Name.Replace(" ", "").ToLower();
                     if (str.Equals(actionName))

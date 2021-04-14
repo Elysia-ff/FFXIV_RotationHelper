@@ -2,25 +2,15 @@
 
 namespace FFXIV_RotationHelper
 {
-    public class PlayerData
+    public static class PlayerData
     {
-        #region Singleton
-        private static PlayerData instance;
-        public static PlayerData Instance => instance ?? (instance = new PlayerData());
+        public static uint Code { get; private set; } = 0;
+        public static string Name { get; private set; } = string.Empty;
 
-        public static void Free()
-        {
-            instance = null;
-        }
-        #endregion
+        public static uint PetCode { get; private set; } = 0;
+        public static string PetName { get; private set; } = string.Empty;
 
-        public uint Code { get; private set; } = 0;
-        public string Name { get; private set; } = string.Empty;
-
-        public uint PetCode { get; private set; } = 0;
-        public string PetName { get; private set; } = string.Empty;
-
-        public bool SetPlayer(string[] log)
+        public static bool SetPlayer(string[] log)
         {
             try
             {
@@ -38,7 +28,7 @@ namespace FFXIV_RotationHelper
             return false;
         }
 
-        public bool SetPet(string[] log)
+        public static bool SetPet(string[] log)
         {
             try
             {
@@ -65,7 +55,7 @@ namespace FFXIV_RotationHelper
             return false;
         }
 
-        public bool RemovePet(string[] log)
+        public static bool RemovePet(string[] log)
         {
             try
             {
