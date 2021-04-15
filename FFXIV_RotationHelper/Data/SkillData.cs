@@ -38,7 +38,7 @@ namespace FFXIV_RotationHelper
 #if DEBUG
         public override string ToString()
         {
-            return $"Idx : {DBIdx} // Name : {Name}";
+            return $"DBIdx : {(int)DBIdx} // GameIdx : {(int)GameIdx} // Name : {Name}";
         }
 #endif
     }
