@@ -22,8 +22,13 @@ namespace FFXIV_RotationHelper
             string icon = jProperty.Value.Value<string>("icon");
             IconURL = string.Format(iconURLFormat, icon);
 
-            JToken cToken = jProperty.Value["c"];
-            GameIdx = new GameIdx(cToken != null ? (int)cToken : (int)DBIdx);
+
+            GameIdx = new GameIdx(0);
+            if (!DB.IsAdjustedIdx(DBIdx, ref GameIdx))
+            {
+                JToken cToken = jProperty.Value["c"];
+                GameIdx = new GameIdx(cToken != null ? (int)cToken : (int)DBIdx);
+            }
 
 #if DEBUG
             Name = jProperty.Value.Value<string>("name");
