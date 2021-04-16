@@ -24,5 +24,7 @@
 
         public static explicit operator int(DBIdx dbIdx) { return dbIdx.v; }
         public static explicit operator DBIdx(int value) { return new DBIdx(value); }
+
+        public static explicit operator GameIdx(DBIdx dbIdx) { return (GameIdx)dbIdx.v; }
     }
 }

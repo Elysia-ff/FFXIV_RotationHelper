@@ -11,5 +11,7 @@
 
         public static explicit operator int(GameIdx gameIdx) { return gameIdx.v; }
         public static explicit operator GameIdx(int value) { return new GameIdx(value); }
+
+        public static explicit operator DBIdx(GameIdx gameIdx) { return (DBIdx)gameIdx.v; }
     }
 }

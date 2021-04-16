@@ -9,8 +9,8 @@ namespace FFXIV_RotationHelper
     {
         public string URL { get; private set; } = string.Empty;
 
-        [JsonProperty("hits")]
-        public int Hits { get; set; }
+        //[JsonProperty("hits")]
+        //public int Hits { get; set; }
 
         [JsonProperty("class")]
         public string Class { get; set; }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FFXIV_RotationHelper.StrongType;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -76,7 +77,7 @@ namespace FFXIV_RotationHelper
         public void LoadData(RotationData data)
         {
             loadedData = data;
-            skillList = DB.Get(data.Sequence);
+            skillList = DB.Get(data);
         }
 
         private void MakePictureBox()
@@ -142,7 +143,8 @@ namespace FFXIV_RotationHelper
             }
 
             SkillData skillData = skillList[currentIdx];
-            if (skillData.DBIdx == logData.DBIdx)
+            DBIdx dbIdx = DB.Convert(loadedData.Class, logData.GameIdx);
+            if (skillData.DBIdx == dbIdx)
             {
                 ++currentIdx;
                 if ((currentIdx >= skillList.Count) && Properties.Settings.Default.RestartOnEnd)

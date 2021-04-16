@@ -7,7 +7,6 @@ namespace FFXIV_RotationHelper
     {
         public readonly DBIdx DBIdx;
         public readonly string IconURL;
-        public readonly GameIdx GameIdx;
 
 #if DEBUG
         public readonly string Name;
@@ -15,30 +14,22 @@ namespace FFXIV_RotationHelper
 
         private static readonly string iconURLFormat = "https://ffxivrotations.com/icon/{0}.png";
 
-        public SkillData(JProperty jProperty)
+        public SkillData(DBIdx dbIdx, JObject jObject)
         {
-            DBIdx = (DBIdx)int.Parse(jProperty.Name);
+            DBIdx = dbIdx;
 
-            string icon = jProperty.Value.Value<string>("icon");
+            string icon = jObject.Value<string>("icon");
             IconURL = string.Format(iconURLFormat, icon);
 
-
-            GameIdx = new GameIdx(0);
-            if (!DB.IsAdjustedIdx(DBIdx, ref GameIdx))
-            {
-                JToken cToken = jProperty.Value["c"];
-                GameIdx = new GameIdx(cToken != null ? (int)cToken : (int)DBIdx);
-            }
-
 #if DEBUG
-            Name = jProperty.Value.Value<string>("name");
+            Name = jObject.Value<string>("name");
 #endif
         }
 
 #if DEBUG
         public override string ToString()
         {
-            return $"DBIdx : {(int)DBIdx} // GameIdx : {(int)GameIdx} // Name : {Name}";
+            return $"DBIdx : {(int)DBIdx} // Name : {Name}";
         }
 #endif
     }

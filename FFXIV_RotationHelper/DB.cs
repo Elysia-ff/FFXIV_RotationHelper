@@ -9,40 +9,39 @@ using System.Threading.Tasks;
 
 namespace FFXIV_RotationHelper
 {
+    using AdjustTable = Dictionary<string, Dictionary<DBIdx, GameIdx>>;
+
     public static class DB
     {
         /// <summary>
         /// DB loaded from https://ffxivrotations.com/db.json
         /// </summary>
-        private static readonly Dictionary<DBIdx, SkillData> data = new Dictionary<DBIdx, SkillData>();
+        private static readonly Dictionary<string, Dictionary<DBIdx, SkillData>> data = new Dictionary<string, Dictionary<DBIdx, SkillData>>();
 
         /// <summary>
         /// Is used to find DB using GameIdx
         /// </summary>
-        private static readonly Dictionary<GameIdx, DBIdx> gameToDb = new Dictionary<GameIdx, DBIdx>();
+        private static readonly Dictionary<string, Dictionary<GameIdx, DBIdx>> gameToDB = new Dictionary<string, Dictionary<GameIdx, DBIdx>>();
 
         /// <summary>
         /// Stores DBIdxes which is not supported (e.g. potions)
         /// </summary>
         private static readonly HashSet<DBIdx> ignoreSet = new HashSet<DBIdx>();
 
-        /// <summary>
-        /// To deal with DB data corruption, stores specified DBIdx, GameIdx pair
-        /// </summary>
-        private static readonly Dictionary<DBIdx, GameIdx> adjustTable = new Dictionary<DBIdx, GameIdx>();
-
         public static bool IsLoaded { get; private set; }
 
         public static async Task LoadAsync()
         {
-            await LoadAdjustTable();
-            await LoadDB();
+            AdjustTable table = await LoadAdjustTable();
+            await LoadDB(table);
 
             IsLoaded = true;
         }
 
-        private static async Task LoadAdjustTable()
+        private static async Task<AdjustTable> LoadAdjustTable()
         {
+            AdjustTable table = new AdjustTable();
+
             HttpWebRequest request = WebRequest.Create("https://raw.githubusercontent.com/Elysia-ff/FFXIV_RotationHelper-resources/master/Output/ActionTable/ActionTable.csv") as HttpWebRequest;
             using (HttpWebResponse response = await Task.Factory.FromAsync(request.BeginGetResponse, request.EndGetResponse, null) as HttpWebResponse)
             using (StreamReader streamReader = new StreamReader(response.GetResponseStream()))
@@ -56,16 +55,23 @@ namespace FFXIV_RotationHelper
                     while (await csv.ReadAsync())
                     {
                         string[] records = csv.Context.Record;
-                        int dbIdx = int.Parse(records[0]);
-                        int gameIdx = int.Parse(records[1]);
+                        string className = records[0];
+                        if (!table.ContainsKey(className))
+                        {
+                            table.Add(className, new Dictionary<DBIdx, GameIdx>());
+                        }
 
-                        adjustTable.Add(new DBIdx(dbIdx), new GameIdx(gameIdx));
+                        int dbIdx = int.Parse(records[1]);
+                        int gameIdx = int.Parse(records[2]);
+                        table[className].Add((DBIdx)dbIdx, (GameIdx)gameIdx);
                     }
                 }
             }
+
+            return table;
         }
 
-        private static async Task LoadDB()
+        private static async Task LoadDB(AdjustTable table)
         {
             HttpWebRequest request = WebRequest.Create("https://ffxivrotations.com/db.json") as HttpWebRequest;
             using (HttpWebResponse response = await Task.Factory.FromAsync(request.BeginGetResponse, request.EndGetResponse, null) as HttpWebResponse)
@@ -73,47 +79,60 @@ namespace FFXIV_RotationHelper
             {
                 string content = await streamReader.ReadToEndAsync();
                 JObject jObject = JObject.Parse(content);
-                
-                if (jObject.TryGetValue("skills", out JToken skills))
+                JToken skills = jObject.GetValue("skills");
+                JToken classes = jObject.GetValue("classes");
+
+                foreach (JProperty classProperty in classes.Children<JProperty>())
                 {
-                    foreach (JProperty jData in skills.Children<JProperty>())
+                    string discipline = classProperty.Value.Value<string>("discipline");
+                    if (discipline != "war" && discipline != "magic")
                     {
-                        if (string.IsNullOrEmpty(jData.Value.Value<string>("deprecated")))
+                        continue;
+                    }
+
+                    string className = classProperty.Name;
+                    if (!data.ContainsKey(className))
+                    {
+                        data.Add(className, new Dictionary<DBIdx, SkillData>());
+                        gameToDB.Add(className, new Dictionary<GameIdx, DBIdx>());
+                    }
+
+                    foreach (JProperty skillProperty in classProperty.Value.Children<JProperty>())
+                    {
+                        if (skillProperty.Value.Type != JTokenType.Array)
                         {
-                            SkillData skillData = new SkillData(jData);
+                            continue;
+                        }
 
-                            if (!data.ContainsKey(skillData.DBIdx))
+                        foreach (int idx in skillProperty.Value.Values<int>())
+                        {
+                            JObject skillObject = skills.Value<JObject>(idx.ToString());
+                            if (string.IsNullOrEmpty(skillObject.Value<string>("deprecated")))
                             {
-                                data.Add(skillData.DBIdx, skillData);
-                            }
-#if DEBUG
-                            else
-                            {
-                                throw new System.ArgumentException($"({(int)skillData.DBIdx}) key already exists in data");
-                            }
-#endif
+                                DBIdx dbIdx = (DBIdx)idx;
+                                SkillData skillData = new SkillData(dbIdx, skillObject);
+                                data[className].Add(dbIdx, skillData);
 
-                            if (!gameToDb.ContainsKey(skillData.GameIdx))
-                            {
-                                gameToDb.Add(skillData.GameIdx, skillData.DBIdx);
+                                if (table.ContainsKey(className) && table[className].ContainsKey(dbIdx))
+                                {
+                                    gameToDB[className].Add(table[className][dbIdx], dbIdx);
+                                }
+                                else
+                                {
+                                    int c = skillObject.Value<int>("c");
+                                    GameIdx gameIdx = c > 0 ? (GameIdx)c : (GameIdx)dbIdx;
+                                    gameToDB[className].Add(gameIdx, dbIdx);
+                                }
                             }
-#if DEBUG
-                            else
-                            {
-                                throw new System.ArgumentException($"({(int)skillData.GameIdx}) key already exists in gameToDb");
-                            }
-#endif
                         }
                     }
                 }
 
-                if (jObject.TryGetValue("misc", out JToken misc))
+                JToken misc = jObject.GetValue("misc");
+                foreach (JValue jValue in misc.Children<JValue>())
                 {
-                    foreach (JValue jValue in misc.Children<JValue>())
-                    {
-                        int idx = jValue.Value<int>();
-                        ignoreSet.Add(new DBIdx(idx));
-                    }
+                    int idx = jValue.Value<int>();
+                    ignoreSet.Add((DBIdx)idx);
                 }
             }
 
@@ -122,18 +141,17 @@ namespace FFXIV_RotationHelper
 #endif
         }
 
-        public static List<SkillData> Get(List<DBIdx> sequence)
+        public static List<SkillData> Get(RotationData rotationData)
         {
-            List<SkillData> list = new List<SkillData>();
-
-            if (sequence == null || sequence.Count <= 0)
+            if (!data.ContainsKey(rotationData.Class) || rotationData.Sequence == null || rotationData.Sequence.Count <= 0)
             {
-                return list;
+                return new List<SkillData>();
             }
 
-            for (int i = 0; i < sequence.Count; ++i)
+            List<SkillData> list = new List<SkillData>();
+            for (int i = 0; i < rotationData.Sequence.Count; ++i)
             {
-                if (data.TryGetValue(sequence[i], out SkillData skillData))
+                if (data[rotationData.Class].TryGetValue(rotationData.Sequence[i], out SkillData skillData))
                 {
                     list.Add(skillData);
                 }
@@ -142,25 +160,18 @@ namespace FFXIV_RotationHelper
             return list;
         }
 
-        public static DBIdx Convert(GameIdx gameIdx)
+        public static DBIdx Convert(string className, GameIdx gameIdx)
         {
-            if (gameToDb.ContainsKey(gameIdx))
+            if (gameToDB.ContainsKey(className) && gameToDB[className].ContainsKey(gameIdx))
             {
-                return gameToDb[gameIdx];
+                return gameToDB[className][gameIdx];
             }
 
-            return (DBIdx)(int)gameIdx;
-        }
-
-        public static bool IsAdjustedIdx(DBIdx dbIdx, ref GameIdx output)
-        {
-            if (adjustTable.ContainsKey(dbIdx))
-            {
-                output = adjustTable[dbIdx];
-                return true;
-            }
-
-            return false;
+#if DEBUG
+            throw new System.NotImplementedException($"Not found key ({(int)gameIdx}) in gameToDB");
+#else
+            return (DBIdx)gameIdx;
+#endif
         }
 
         public static bool IsIgnoreSet(DBIdx dBIdx)
@@ -176,12 +187,15 @@ namespace FFXIV_RotationHelper
                 actionName = actionName.Replace(" ", "").ToLower();
 
                 List<SkillData> list = new List<SkillData>();
-                foreach (KeyValuePair<DBIdx, SkillData> kv in data)
+                foreach (var d in data)
                 {
-                    string str = kv.Value.Name.Replace(" ", "").ToLower();
-                    if (str.Equals(actionName))
+                    foreach (KeyValuePair<DBIdx, SkillData> kv in data[d.Key])
                     {
-                        list.Add(kv.Value);
+                        string str = kv.Value.Name.Replace(" ", "").ToLower();
+                        if (str.Equals(actionName))
+                        {
+                            list.Add(kv.Value);
+                        }
                     }
                 }
 

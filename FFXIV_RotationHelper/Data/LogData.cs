@@ -7,7 +7,6 @@ namespace FFXIV_RotationHelper
     {
         public readonly bool IsByMe;
         public readonly GameIdx GameIdx;
-        public readonly DBIdx DBIdx;
         public readonly bool IsValid;
         
         public LogData(string[] log)
@@ -20,15 +19,13 @@ namespace FFXIV_RotationHelper
                 uint casterCode = uint.Parse(log[2], NumberStyles.HexNumber);
                 GameIdx = (GameIdx)int.Parse(log[4], NumberStyles.HexNumber);
                 IsByMe = (PlayerData.Code == casterCode) || (PlayerData.PetCode == casterCode);
-                DBIdx = DB.Convert(GameIdx);
 
                 IsValid = IsByMe;
             }
             catch
             {
                 IsByMe = false;
-                GameIdx = new GameIdx(-1);
-                DBIdx = new DBIdx(-1);
+                GameIdx = (GameIdx)(-1);
 
                 IsValid = false;
             }
