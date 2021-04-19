@@ -143,8 +143,7 @@ namespace FFXIV_RotationHelper
             }
 
             SkillData skillData = skillList[currentIdx];
-            DBIdx dbIdx = DB.Convert(loadedData.Class, logData.GameIdx);
-            if (skillData.DBIdx == dbIdx)
+            if (DB.IsSameAction(loadedData.Class, logData.GameIdx, skillData.DBIdx))
             {
                 ++currentIdx;
                 if ((currentIdx >= skillList.Count) && Properties.Settings.Default.RestartOnEnd)

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace FFXIV_RotationHelper
 {
-    using AdjustTable = Dictionary<string, Dictionary<DBIdx, GameIdx>>;
+    using ActionTable = Dictionary<string, Dictionary<GameIdx, List<DBIdx>>>;
 
     public static class DB
     {
@@ -21,7 +21,7 @@ namespace FFXIV_RotationHelper
         /// <summary>
         /// Is used to find DB using GameIdx
         /// </summary>
-        private static readonly Dictionary<string, Dictionary<GameIdx, DBIdx>> gameToDB = new Dictionary<string, Dictionary<GameIdx, DBIdx>>();
+        private static readonly ActionTable actionTable = new ActionTable();
 
         /// <summary>
         /// Stores DBIdxes which is not supported (e.g. potions)
@@ -32,16 +32,14 @@ namespace FFXIV_RotationHelper
 
         public static async Task LoadAsync()
         {
-            AdjustTable table = await LoadAdjustTable();
-            await LoadDB(table);
+            await LoadAdjustTable();
+            await LoadDB();
 
             IsLoaded = true;
         }
 
-        private static async Task<AdjustTable> LoadAdjustTable()
+        private static async Task LoadAdjustTable()
         {
-            AdjustTable table = new AdjustTable();
-
             HttpWebRequest request = WebRequest.Create("https://raw.githubusercontent.com/Elysia-ff/FFXIV_RotationHelper-resources/master/Output/ActionTable/ActionTable.csv") as HttpWebRequest;
             using (HttpWebResponse response = await Task.Factory.FromAsync(request.BeginGetResponse, request.EndGetResponse, null) as HttpWebResponse)
             using (StreamReader streamReader = new StreamReader(response.GetResponseStream()))
@@ -56,22 +54,25 @@ namespace FFXIV_RotationHelper
                     {
                         string[] records = csv.Context.Record;
                         string className = records[0];
-                        if (!table.ContainsKey(className))
+                        if (!actionTable.ContainsKey(className))
                         {
-                            table.Add(className, new Dictionary<DBIdx, GameIdx>());
+                            actionTable.Add(className, new Dictionary<GameIdx, List<DBIdx>>());
                         }
 
-                        int dbIdx = int.Parse(records[1]);
-                        int gameIdx = int.Parse(records[2]);
-                        table[className].Add((DBIdx)dbIdx, (GameIdx)gameIdx);
+                        GameIdx gameIdx = (GameIdx)int.Parse(records[2]);
+                        if (!actionTable[className].ContainsKey(gameIdx))
+                        {
+                            actionTable[className].Add(gameIdx, new List<DBIdx>());
+                        }
+
+                        DBIdx dbIdx = (DBIdx)int.Parse(records[3]);
+                        actionTable[className][gameIdx].Add(dbIdx);
                     }
                 }
             }
-
-            return table;
         }
 
-        private static async Task LoadDB(AdjustTable table)
+        private static async Task LoadDB()
         {
             HttpWebRequest request = WebRequest.Create("https://ffxivrotations.com/db.json") as HttpWebRequest;
             using (HttpWebResponse response = await Task.Factory.FromAsync(request.BeginGetResponse, request.EndGetResponse, null) as HttpWebResponse)
@@ -94,7 +95,6 @@ namespace FFXIV_RotationHelper
                     if (!data.ContainsKey(className))
                     {
                         data.Add(className, new Dictionary<DBIdx, SkillData>());
-                        gameToDB.Add(className, new Dictionary<GameIdx, DBIdx>());
                     }
 
                     foreach (JProperty skillProperty in classProperty.Value.Children<JProperty>())
@@ -112,17 +112,6 @@ namespace FFXIV_RotationHelper
                                 DBIdx dbIdx = (DBIdx)idx;
                                 SkillData skillData = new SkillData(dbIdx, skillObject);
                                 data[className].Add(dbIdx, skillData);
-
-                                if (table.ContainsKey(className) && table[className].ContainsKey(dbIdx))
-                                {
-                                    gameToDB[className].Add(table[className][dbIdx], dbIdx);
-                                }
-                                else
-                                {
-                                    int c = skillObject.Value<int>("c");
-                                    GameIdx gameIdx = c > 0 ? (GameIdx)c : (GameIdx)dbIdx;
-                                    gameToDB[className].Add(gameIdx, dbIdx);
-                                }
                             }
                         }
                     }
@@ -160,18 +149,21 @@ namespace FFXIV_RotationHelper
             return list;
         }
 
-        public static DBIdx Convert(string className, GameIdx gameIdx)
+        public static bool IsSameAction(string className, GameIdx gameIdx, DBIdx dBIdx)
         {
-            if (gameToDB.ContainsKey(className) && gameToDB[className].ContainsKey(gameIdx))
+            if (actionTable.ContainsKey(className) && actionTable[className].ContainsKey(gameIdx))
             {
-                return gameToDB[className][gameIdx];
+                List<DBIdx> idxes = actionTable[className][gameIdx];
+                for (int i = 0; i < idxes.Count; i++)
+                {
+                    if (idxes[i] == dBIdx)
+                    {
+                        return true;
+                    }
+                }
             }
 
-#if DEBUG
-            throw new System.NotImplementedException($"Not found key ({(int)gameIdx}) in gameToDB");
-#else
-            return (DBIdx)gameIdx;
-#endif
+            return false;
         }
 
         public static bool IsIgnoreSet(DBIdx dBIdx)
