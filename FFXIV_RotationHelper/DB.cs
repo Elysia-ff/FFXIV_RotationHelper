@@ -49,6 +49,9 @@ namespace FFXIV_RotationHelper
                 using (StringReader reader = new StringReader(content))
                 using (CsvReader csv = new CsvReader(reader))
                 {
+                    csv.Configuration.Delimiter = ",";
+                    csv.Configuration.Quote = '\"';
+
                     await csv.ReadAsync();
                     while (await csv.ReadAsync())
                     {
