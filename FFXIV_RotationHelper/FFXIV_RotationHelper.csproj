@@ -85,6 +85,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Command\Command.cs" />
+    <Compile Include="Command\Method.cs" />
     <Compile Include="DB.cs" />
     <Compile Include="StrongType\DBIdx.cs" />
     <Compile Include="StrongType\GameIdx.cs" />

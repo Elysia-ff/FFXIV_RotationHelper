@@ -20,12 +20,31 @@ namespace FFXIV_RotationHelper
         public FFXIV_RotationHelper()
         {
             rotationWindow = new RotationWindow();
+            rotationWindow.OnRotationEnded += () => { StartBtn_Click(null, EventArgs.Empty); };
             saveURLForm = new SaveURLForm(this);
 
             InitializeComponent();
             isClickthroughCheckBox.Checked = Properties.Settings.Default.Clickthrough;
             restartCheckBox.Checked = Properties.Settings.Default.RestartOnEnd;
             sizeComboBox.SelectedItem = Properties.Settings.Default.Size.ToString();
+
+            Command.Bind("rotationtoggle", new Method(() =>
+            {
+                if (startBtn.Enabled)
+                {
+                    Invoke(new Action(() =>
+                    {
+                        StartBtn_Click(null, EventArgs.Empty);
+                    }));
+                }
+            }));
+            Command.Bind("rotationreset", new Method(() =>
+            {
+                if (rotationWindow.IsPlaying)
+                {
+                    rotationWindow.Reset();
+                }
+            }));
         }
 
         #region IActPluginV1 Method
@@ -155,6 +174,19 @@ namespace FFXIV_RotationHelper
             LogDefine.Type logType = (LogDefine.Type)logCode;
             switch (logType)
             {
+                case LogDefine.Type.Chat:
+                    // 0    1                                   2     3  4
+                    // 00 | 2021-05-14T19:09:04.0000000+09:00 | 0038 | | end | 643004e1d4abc57ce3a15931e1139f8e
+                    if (logLine.Length >= 5)
+                    {
+                        if (logLine[2].Equals(LogDefine.ECHO_CHAT_CODE))
+                        {
+                            Command.Execute(logLine[4].ToLower());
+                        }
+                    }
+
+                    break;
+
                 case LogDefine.Type.ChangePrimaryPlayer:
                     if (PlayerData.SetPlayer(logLine))
                     {

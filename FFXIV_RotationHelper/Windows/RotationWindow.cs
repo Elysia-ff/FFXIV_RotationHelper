@@ -1,5 +1,4 @@
-﻿using FFXIV_RotationHelper.StrongType;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -17,9 +16,11 @@ namespace FFXIV_RotationHelper
 
         public bool IsLoaded { get { return loadedData != null; } }
         public string IsLoadedURL { get { return IsLoaded ? loadedData.URL : string.Empty; } }
-        public bool IsPlaying { get; private set; }
+        public bool IsPlaying { get { return Visible && IsLoaded; } }
 
         private const int interval = 20;
+
+        public event Action OnRotationEnded;
 
         // Hide from Alt+Tab
         // https://social.msdn.microsoft.com/Forums/windows/en-US/0eefb6f4-3619-4f7a-b144-48df80e2c603/how-to-hide-form-from-alttab-dialog?forum=winforms
@@ -146,15 +147,20 @@ namespace FFXIV_RotationHelper
             if (DB.IsSameAction(loadedData.Class, logData.GameIdx, skillData.DBIdx))
             {
                 ++currentIdx;
-                if ((currentIdx >= skillList.Count) && Properties.Settings.Default.RestartOnEnd)
+                if (currentIdx >= skillList.Count)
                 {
-                    currentIdx = 0;
-                    MakePictureBox();
+                    if (Properties.Settings.Default.RestartOnEnd)
+                    {
+                        currentIdx = 0;
+                    }
+                    else
+                    {
+                        OnRotationEnded?.Invoke();
+                        return;
+                    }
                 }
-                else
-                {
-                    Reposition();
-                }
+
+                Reposition();
             }
         }
 
@@ -170,6 +176,12 @@ namespace FFXIV_RotationHelper
             {
                 pictureList[i].Size = new Size(height, height);
             }
+            Reposition();
+        }
+
+        public void Reset()
+        {
+            currentIdx = 0;
             Reposition();
         }
     }
