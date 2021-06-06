@@ -88,8 +88,10 @@
     <Compile Include="Command\Command.cs" />
     <Compile Include="Command\Method.cs" />
     <Compile Include="DB.cs" />
+    <Compile Include="Rotation.cs" />
     <Compile Include="StrongType\DBIdx.cs" />
     <Compile Include="StrongType\GameIdx.cs" />
+    <Compile Include="Utility.cs" />
     <Compile Include="Windows\FFXIV_RotationHelper.cs">
       <SubType>UserControl</SubType>
     </Compile>

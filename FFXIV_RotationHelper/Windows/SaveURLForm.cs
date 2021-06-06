@@ -8,9 +8,6 @@ namespace FFXIV_RotationHelper
     {
         private readonly FFXIV_RotationHelper helper;
 
-        private readonly char keySeparator = '\t';
-        private readonly char valueSeparator = '\n';
-
         public SaveURLForm(FFXIV_RotationHelper _helper)
         {
             helper = _helper;
@@ -23,10 +20,10 @@ namespace FFXIV_RotationHelper
             dataGridView.Rows.Clear();
             dataGridView.RowsRemoved += DataGridView_RowsRemoved;
 
-            string[] data = Properties.Settings.Default.SavedURLs.Split(keySeparator);
+            string[] data = Properties.Settings.Default.SavedURLs.Split(Utility.keySeparator);
             for (int i = 0; i < data.Length; ++i)
             {
-                string[] value = data[i].Split(valueSeparator);
+                string[] value = data[i].Split(Utility.valueSeparator);
                 if (value.Length >= 2)
                 {
                     string url = value[0];
@@ -37,30 +34,25 @@ namespace FFXIV_RotationHelper
             }
         }
 
-        private string ObjectToString(object o)
-        {
-            return o == null ? string.Empty : o.ToString();
-        }
-
         private void Save()
         {
             StringBuilder stringBuilder = new StringBuilder();
             DataGridViewRowCollection row = dataGridView.Rows;
             for (int i = 0; i < row.Count; ++i)
             {
-                string url = ObjectToString(row[i].Cells[0].Value);
+                string url = Utility.ObjectToString(row[i].Cells[0].Value);
                 if (url.Length <= 0)
                 {
                     continue;
                 }
 
-                string memo = ObjectToString(row[i].Cells[1].Value);
+                string memo = Utility.ObjectToString(row[i].Cells[1].Value);
 
                 stringBuilder.Append(url);
-                stringBuilder.Append(valueSeparator);
+                stringBuilder.Append(Utility.valueSeparator);
                 stringBuilder.Append(memo);
 
-                stringBuilder.Append(keySeparator);
+                stringBuilder.Append(Utility.keySeparator);
             }
 
             if (stringBuilder.Length > 0)
@@ -75,10 +67,35 @@ namespace FFXIV_RotationHelper
         private void SelectBtn_Click(object sender, EventArgs e)
         {
             DataGridViewSelectedRowCollection row = dataGridView.SelectedRows;
+            //Added feature - allow multiple URLs to be selected and passed back to FFXIV_RotationHelper gridview control
             if (row.Count > 0)
             {
-                string url = ObjectToString(row[0].Cells[0].Value);
-                helper.SetURL(url);
+                StringBuilder stringBuilder = new StringBuilder();
+                for (int i = 0; i < row.Count; ++i)
+                {
+                    
+                    string url = Utility.ObjectToString(row[i].Cells[0].Value);
+                    if (url.Length <= 0)
+                    {
+                        continue;
+                    }
+
+                    string memo = Utility.ObjectToString(row[i].Cells[1].Value);
+
+                    stringBuilder.Append(url);
+                    stringBuilder.Append(Utility.valueSeparator);
+                    stringBuilder.Append(memo);
+
+                    stringBuilder.Append(Utility.keySeparator);
+                }
+
+                if (stringBuilder.Length > 0)
+                {
+                    stringBuilder.Remove(stringBuilder.Length - 1, 1);
+                }
+
+                //Pass assembled stringbuilder back to RotationHelper form gridview control
+                helper.SetURLs(stringBuilder);
 
                 Close();
             }
