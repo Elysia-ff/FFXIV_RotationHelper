@@ -8,6 +8,8 @@ using System.Net;
 using System.IO;
 using Newtonsoft.Json;
 using System.Diagnostics;
+using System.Linq;
+using System.Drawing;
 
 namespace FFXIV_RotationHelper
 {
@@ -16,6 +18,9 @@ namespace FFXIV_RotationHelper
         private Label lblStatus;
         private readonly RotationWindow rotationWindow;
         private readonly SaveURLForm saveURLForm;
+        private Rectangle dragBoxFromMouseDown;
+        private int rowIndexFromMouseDown;
+        private int rowIndexOfItemUnderMouseToDrop;
 
         public FFXIV_RotationHelper()
         {
@@ -25,7 +30,6 @@ namespace FFXIV_RotationHelper
 
             InitializeComponent();
             isClickthroughCheckBox.Checked = Properties.Settings.Default.Clickthrough;
-            restartCheckBox.Checked = Properties.Settings.Default.RestartOnEnd;
             sizeComboBox.SelectedItem = Properties.Settings.Default.Size.ToString();
 
             Command.Bind("rotationtoggle", new Method(() =>
@@ -55,7 +59,8 @@ namespace FFXIV_RotationHelper
             lblStatus = pluginStatusText;
             lblStatus.Text = "Plugin Started";
 
-            urlTextBox.Text = Properties.Settings.Default.lastURL.ToString();
+
+            LoadData();
 
             ActGlobals.oFormActMain.BeforeLogLineRead -= OFormActMain_BeforeLogLineRead;
             ActGlobals.oFormActMain.BeforeLogLineRead += OFormActMain_BeforeLogLineRead;
@@ -68,6 +73,206 @@ namespace FFXIV_RotationHelper
             lblStatus.Text = "No Status";
 
             ActGlobals.oFormActMain.BeforeLogLineRead -= OFormActMain_BeforeLogLineRead;
+        }
+        #endregion
+
+        #region GridManagement
+        public void LoadData()
+        {
+            gvSelectedUrls.RowsRemoved -= GvSelectedUrls_RowsRemoved;
+            gvSelectedUrls.Rows.Clear();
+            gvSelectedUrls.RowsRemoved += GvSelectedUrls_RowsRemoved;
+
+            string[] data = Properties.Settings.Default.LastURLs.Split(Utility.keySeparator);
+            for (int i = 0; i < data.Length; ++i)
+            {
+                string[] value = data[i].Split(Utility.valueSeparator);
+                var valueLength = value.Length;
+                if (valueLength >= 2)
+                {
+                    string url = value[0];
+                    string memo = value[1];
+                    // Default Loop to false if not present or use saved value if found
+                    bool loop = false;
+                    if (valueLength >= 3) {
+                        bool.TryParse(value[2], out loop); 
+                    }
+
+                    gvSelectedUrls.Rows.Add(url, memo, loop);
+                }
+            }
+        }
+
+        public List<Rotation> InitRotation()
+        {
+
+            var rotations = new List<Rotation>();
+            string[] data = Properties.Settings.Default.LastURLs.Split(Utility.keySeparator);
+            for (int i = 0; i < data.Length; ++i)
+            {
+                string[] value = data[i].Split(Utility.valueSeparator);
+                var valueLength = value.Length;
+                if (valueLength >= 2)
+                {
+                    string url = value[0];
+                    // Default Loop to false if not present or use saved value if found
+                    bool loop = false;
+                    if (valueLength >= 3)
+                    {
+                        bool.TryParse(value[2], out loop);
+                    }
+
+                    rotations.Add(new Rotation { Url = url, Loop = loop });
+                }
+            }
+
+            return rotations;
+        }
+
+        private void GvSelectedUrls_RowsRemoved(object sender, DataGridViewRowsRemovedEventArgs e)
+        {
+            Save();
+        }
+
+        private void GvSelectedUrls_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+        {
+            Save();
+        }
+
+        private void GvSelectedUrls_VisibleChanged(object sender, EventArgs e)
+        {
+            if (Visible)
+            {
+                LoadData();
+            }
+        }
+
+        private void Save()
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+            DataGridViewRowCollection row = gvSelectedUrls.Rows;
+            for (int i = 0; i < row.Count; ++i)
+            {
+                string url = Utility.ObjectToString(row[i].Cells[0].Value);
+                if (url.Length <= 0)
+                {
+                    continue;
+                }
+
+                string memo = Utility.ObjectToString(row[i].Cells[1].Value);
+                string loop = Utility.ObjectToString(row[i].Cells[2].Value);
+
+                stringBuilder.Append(url);
+                stringBuilder.Append(Utility.valueSeparator);
+                stringBuilder.Append(memo);
+                stringBuilder.Append(Utility.valueSeparator);
+                stringBuilder.Append(loop);
+                
+                stringBuilder.Append(Utility.keySeparator);
+            }
+
+            if (stringBuilder.Length > 0)
+            {
+                stringBuilder.Remove(stringBuilder.Length - 1, 1);
+            }
+
+            Properties.Settings.Default.LastURLs = stringBuilder.ToString();
+            Properties.Settings.Default.Save();
+        }
+
+        private void Save(StringBuilder stringBuilder)
+        {
+            Properties.Settings.Default.LastURLs = stringBuilder.ToString();
+            Properties.Settings.Default.Save();
+        }
+
+        private void GvSelectedUrls_MouseMove(object sender, MouseEventArgs e)
+        {
+            if ((e.Button & MouseButtons.Left) == MouseButtons.Left)
+            {
+                // If the mouse moves outside the rectangle, start the drag.
+                if (dragBoxFromMouseDown != Rectangle.Empty &&
+                    !dragBoxFromMouseDown.Contains(e.X, e.Y))
+                {
+
+                    // Proceed with the drag and drop, passing in the list item.                    
+                    DragDropEffects dropEffect = gvSelectedUrls.DoDragDrop(
+                    gvSelectedUrls.Rows[rowIndexFromMouseDown],
+                    DragDropEffects.Move);
+                }
+            }
+        }
+
+        private void GvSelectedUrls_MouseDown(object sender, MouseEventArgs e)
+        {
+            // Get the index of the item the mouse is below.
+            rowIndexFromMouseDown = gvSelectedUrls.HitTest(e.X, e.Y).RowIndex;
+            if (rowIndexFromMouseDown != -1)
+            {
+                // Remember the point where the mouse down occurred. 
+                // The DragSize indicates the size that the mouse can move 
+                // before a drag event should be started.                
+                Size dragSize = SystemInformation.DragSize;
+
+                // Create a rectangle using the DragSize, with the mouse position being
+                // at the center of the rectangle.
+                dragBoxFromMouseDown = new Rectangle(new Point(e.X - (dragSize.Width / 2),
+                                                               e.Y - (dragSize.Height / 2)),
+                                    dragSize);
+            }
+            else
+                // Reset the rectangle if the mouse is not over an item in the ListBox.
+                dragBoxFromMouseDown = Rectangle.Empty;
+        }
+
+        private void GvSelectedUrls_DragOver(object sender, DragEventArgs e)
+        {
+            e.Effect = DragDropEffects.Move;
+        }
+
+        private void GvSelectedUrls_DragDrop(object sender, DragEventArgs e)
+        {
+            // The mouse locations are relative to the screen, so they must be 
+            // converted to client coordinates.
+            Point clientPoint = gvSelectedUrls.PointToClient(new Point(e.X, e.Y));
+
+            // Get the row index of the item the mouse is below. 
+            rowIndexOfItemUnderMouseToDrop =
+                gvSelectedUrls.HitTest(clientPoint.X, clientPoint.Y).RowIndex;
+
+            // If the drag operation was a move then remove and insert the row.
+            if (e.Effect == DragDropEffects.Move)
+            {
+
+                DataGridViewRow rowToMove = e.Data.GetData(
+                    typeof(DataGridViewRow)) as DataGridViewRow;
+
+                if (rowIndexOfItemUnderMouseToDrop < 0 || rowIndexOfItemUnderMouseToDrop==gvSelectedUrls.Rows.Count-1)
+                {
+                    return;
+                }
+                gvSelectedUrls.Rows.RemoveAt(rowIndexFromMouseDown);
+                gvSelectedUrls.Rows.Insert(rowIndexOfItemUnderMouseToDrop, rowToMove);
+                loadBtn.Enabled = true; // Order has changed, so re-enable loadBtn
+
+            }
+        }
+
+        private void GvSelectedUrls_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            var columnName = gvSelectedUrls.Columns[e.ColumnIndex].Name;
+            if (columnName == "URL" || columnName == "Loop")
+            {
+                loadBtn.Enabled = true; // Leaving this kind of dumb for now, if URL changes or checkbox changes, re-enable loadBtn
+            }
+        }
+
+        private void GvSelectedUrls_CurrentCellDirtyStateChanged(object sender, EventArgs e)
+        {
+            if (gvSelectedUrls.IsCurrentCellDirty)
+            {
+                gvSelectedUrls.CommitEdit(DataGridViewDataErrorContexts.Commit);
+            }
         }
         #endregion
 
@@ -86,8 +291,8 @@ namespace FFXIV_RotationHelper
                 }
             }
 
-            string url = urlTextBox.Text;
-            if (url == null || url.Length <= 0)
+            var rotations = InitRotation();
+            if (rotations == null || rotations.Count <= 0)
             {
                 return;
             }
@@ -95,11 +300,23 @@ namespace FFXIV_RotationHelper
             loadBtn.Enabled = false;
             startBtn.Enabled = false;
 
-            RotationData data = await GetRotationAsync(url);
-            rotationWindow.LoadData(data);
-            if (data == null || data.Sequence == null || data.Sequence.Count <= 0)
+            foreach (var rotation in rotations)
+            {
+                rotation.Data = await GetRotationAsync(rotation.Url);
+            }
+            
+            rotationWindow.LoadData(rotations);
+
+            if (rotations.Exists(x=>x.Data==null||x.Data.Sequence==null||x.Data.Sequence.Count<=0))
             {
                 MessageBox.Show(this, "Couldn't load the rotation.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            var firstClass = rotations[0].Data.Class;
+            if (!rotations.All<Rotation>(x=>x.Data.Class== firstClass))
+            {
+                MessageBox.Show(this, "Couldn't load the rotation.  Class in rotation must be identical.");
                 return;
             }
 
@@ -107,14 +324,11 @@ namespace FFXIV_RotationHelper
             UpdateStatusLabel();
         }
 
-        public void SetURL(string text)
+        public void SetURLs(StringBuilder urls)
         {
-            urlTextBox.Text = text;
-        }
 
-        private void URLTextBox_TextChanged(object sender, EventArgs e)
-        {
-            loadBtn.Enabled = !rotationWindow.IsLoadedURL.Equals(urlTextBox.Text);
+            Save(urls);
+            LoadData();
         }
 
         private void SaveBtn_Click(object sender, EventArgs e)
@@ -139,8 +353,10 @@ namespace FFXIV_RotationHelper
                 RotationData data = JsonConvert.DeserializeObject<RotationData>(content);
                 data.Initialize(url);
 
-                Properties.Settings.Default.lastURL = data.URL;
-                Properties.Settings.Default.Save();
+                // Since grid initiates Save, shouldn't need this here anymore.
+                // TODO: Remove if no longer needed
+                // Properties.Settings.Default.lastURL = data.URL; // Fix Save
+                // Properties.Settings.Default.Save();
 
                 return data;
             }
@@ -252,12 +468,6 @@ namespace FFXIV_RotationHelper
             }
         }
 
-        private void RestartCheckBox_CheckedChanged(object sender, EventArgs e)
-        {
-            Properties.Settings.Default.RestartOnEnd = restartCheckBox.Checked;
-            Properties.Settings.Default.Save();
-        }
-
         private void SizeComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             string offsetStr = sizeComboBox.SelectedItem.ToString();
@@ -304,6 +514,7 @@ namespace FFXIV_RotationHelper
             LogLineEventArgs args = new LogLineEventArgs(logLineBox.Text, 0, DateTime.Now, string.Empty, true);
             OFormActMain_BeforeLogLineRead(false, args);
         }
+
 #endif
     }
 }

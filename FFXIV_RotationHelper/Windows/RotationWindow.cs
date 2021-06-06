@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Linq;
 
 namespace FFXIV_RotationHelper
 {
@@ -9,13 +10,13 @@ namespace FFXIV_RotationHelper
     {
         protected override Size DefaultSize { get { return new Size(800, 40); } }
 
-        private RotationData loadedData;
-        private List<SkillData> skillList;
+        private List<Rotation> rotations = new List<Rotation>();
+        private List<SkillData> skillList = new List<SkillData>();
         private readonly List<PictureBox> pictureList;
         private int currentIdx = 0;
-
-        public bool IsLoaded { get { return loadedData != null; } }
-        public string IsLoadedURL { get { return IsLoaded ? loadedData.URL : string.Empty; } }
+        private int loopCount = 0;
+        private string loadedClass = string.Empty;
+        public bool IsLoaded { get { return rotations.Exists(x=>x.Data != null); } }
         public bool IsPlaying { get { return Visible && IsLoaded; } }
 
         private const int interval = 20;
@@ -60,8 +61,7 @@ namespace FFXIV_RotationHelper
             if (Visible)
             {
                 Location = Properties.Settings.Default.Location;
-                currentIdx = 0;
-                MakePictureBox();
+                ResetLoop();
                 SetSize(Properties.Settings.Default.Size);
             }
         }
@@ -75,10 +75,57 @@ namespace FFXIV_RotationHelper
             }
         }
 
-        public void LoadData(RotationData data)
+        public void LoadData(List<Rotation> rotationList)
         {
-            loadedData = data;
-            skillList = DB.Get(data);
+            rotations = rotationList;
+            // Since we validated class was identical across loaded rotations, lets use a kludgy solution to default loadedClass for skill matching later
+            loadedClass = rotations[0].Data.Class;
+
+            // Load skill data to rotation list for later concatenation based on later Looping value
+            rotations.ForEach(x => x.SkillList = DB.Get(x.Data));
+            InitializeLoop();
+        }
+
+        private void InitializeLoop()
+        {
+            // Iterate through each rotation and add skill list.
+            currentIdx = 0;
+            skillList.Clear();
+
+            foreach (var rotation in rotations)
+            {
+                // First time through, isLooping will be false and will add all skills in rotation list, subsequent loops will only add those where Loop is true
+                if (loopCount==0 || rotation.Loop)
+                {
+                    skillList.AddRange(rotation.SkillList);
+                }
+            }
+
+            // Re-init Picture if first time through or second.  Subsequent loops don't need to be reset.
+            if (loopCount <= 1)
+            {
+                pictureList.Clear();
+                Controls.Clear();
+                // Ensure UI thread safety
+                if (this.InvokeRequired)
+                {
+                    this.BeginInvoke((MethodInvoker)delegate ()
+                    {
+                        MakePictureBox();
+                    });
+                }
+                else
+                {
+                    MakePictureBox();
+                }
+            }
+        }
+
+        // Resets looping flag as well as initializes loops
+        private void ResetLoop()
+        {
+            loopCount = 0;
+            InitializeLoop();
         }
 
         private void MakePictureBox()
@@ -113,26 +160,30 @@ namespace FFXIV_RotationHelper
 
         private void Reposition()
         {
-            for (int i = 0, idx = 0; i < skillList.Count; ++i)
+            // Avoids index out of range race condition with Reset and OnActionCasted that can occur
+            if (skillList.Count == pictureList.Count)
             {
-                if (i < currentIdx)
+                for (int i = 0, idx = 0; i < skillList.Count; ++i)
                 {
-                    pictureList[i].Visible = false;
+                    if (i < currentIdx)
+                    {
+                        pictureList[i].Visible = false;
+                    }
+                    else if (i < pictureList.Count)
+                    {
+                        pictureList[i].Visible = true;
+                        pictureList[i].Location = new Point((Height + interval) * idx++, 0);
+                    }
+                    else
+                    {
+                        pictureList[i].Visible = false;
+                    }
                 }
-                else if (i < pictureList.Count)
-                {
-                    pictureList[i].Visible = true;
-                    pictureList[i].Location = new Point((Height + interval) * idx++, 0);
-                }
-                else
-                {
-                    pictureList[i].Visible = false;
-                }
-            }
 
-            for (int i = skillList.Count; i < pictureList.Count; ++i)
-            {
-                pictureList[i].Visible = false;
+                for (int i = skillList.Count; i < pictureList.Count; ++i)
+                {
+                    pictureList[i].Visible = false;
+                }
             }
         }
 
@@ -144,14 +195,15 @@ namespace FFXIV_RotationHelper
             }
 
             SkillData skillData = skillList[currentIdx];
-            if (DB.IsSameAction(loadedData.Class, logData.GameIdx, skillData.DBIdx))
+            if (DB.IsSameAction(loadedClass, logData.GameIdx, skillData.DBIdx))
             {
                 ++currentIdx;
                 if (currentIdx >= skillList.Count)
                 {
-                    if (Properties.Settings.Default.RestartOnEnd)
+                    if (rotations.Exists(x=>x.Loop)) // If there exists a rotation set for looping
                     {
-                        currentIdx = 0;
+                        loopCount++;
+                        InitializeLoop();
                     }
                     else
                     {
@@ -181,7 +233,7 @@ namespace FFXIV_RotationHelper
 
         public void Reset()
         {
-            currentIdx = 0;
+            ResetLoop();
             Reposition();
         }
     }
