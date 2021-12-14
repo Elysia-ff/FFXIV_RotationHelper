@@ -40,7 +40,7 @@ namespace FFXIV_RotationHelper
 
         private static async Task LoadAdjustTable()
         {
-            HttpWebRequest request = WebRequest.Create("https://raw.githubusercontent.com/Elysia-ff/FFXIV_RotationHelper-resources/master/Output/ActionTable/ActionTable.csv") as HttpWebRequest;
+            HttpWebRequest request = WebRequest.Create("https://raw.githubusercontent.com/Elysia-ff/FFXIV_RotationHelper-resources/master/Output/ActionTable.csv") as HttpWebRequest;
             using (HttpWebResponse response = await Task.Factory.FromAsync(request.BeginGetResponse, request.EndGetResponse, null) as HttpWebResponse)
             using (StreamReader streamReader = new StreamReader(response.GetResponseStream()))
             {
@@ -51,6 +51,9 @@ namespace FFXIV_RotationHelper
                 {
                     csv.Configuration.Delimiter = ",";
                     csv.Configuration.Quote = '\"';
+#if DEBUG
+                    csv.Configuration.BadDataFound = context => Debug.WriteLine(context.RawRecord);
+#endif
 
                     await csv.ReadAsync();
                     while (await csv.ReadAsync())
@@ -77,54 +80,67 @@ namespace FFXIV_RotationHelper
 
         private static async Task LoadDB()
         {
-            HttpWebRequest request = WebRequest.Create("https://ffxivrotations.com/db.json") as HttpWebRequest;
-            using (HttpWebResponse response = await Task.Factory.FromAsync(request.BeginGetResponse, request.EndGetResponse, null) as HttpWebResponse)
-            using (StreamReader streamReader = new StreamReader(response.GetResponseStream()))
-            {
-                string content = await streamReader.ReadToEndAsync();
-                JObject jObject = JObject.Parse(content);
-                JToken skills = jObject.GetValue("skills");
-                JToken classes = jObject.GetValue("classes");
+            string dbUrl = string.Empty;
 
-                foreach (JProperty classProperty in classes.Children<JProperty>())
+            { // Get DB url
+                HttpWebRequest request = WebRequest.Create("https://raw.githubusercontent.com/Elysia-ff/FFXIV_RotationHelper-resources/master/Output/dburl.txt") as HttpWebRequest;
+                using (HttpWebResponse response = await Task.Factory.FromAsync(request.BeginGetResponse, request.EndGetResponse, null) as HttpWebResponse)
+                using (StreamReader streamReader = new StreamReader(response.GetResponseStream()))
                 {
-                    string discipline = classProperty.Value.Value<string>("discipline");
-                    if (discipline != "war" && discipline != "magic")
-                    {
-                        continue;
-                    }
+                    dbUrl = await streamReader.ReadToEndAsync();
+                }
+            }
 
-                    string className = classProperty.Name;
-                    if (!data.ContainsKey(className))
-                    {
-                        data.Add(className, new Dictionary<DBIdx, SkillData>());
-                    }
+            { // Load DB 
+                HttpWebRequest request = WebRequest.Create(dbUrl) as HttpWebRequest;
+                using (HttpWebResponse response = await Task.Factory.FromAsync(request.BeginGetResponse, request.EndGetResponse, null) as HttpWebResponse)
+                using (StreamReader streamReader = new StreamReader(response.GetResponseStream()))
+                {
+                    string content = await streamReader.ReadToEndAsync();
+                    JObject jObject = JObject.Parse(content);
+                    JToken skills = jObject.GetValue("skills");
+                    JToken classes = jObject.GetValue("classes");
 
-                    foreach (JProperty skillProperty in classProperty.Value.Children<JProperty>())
+                    foreach (JProperty classProperty in classes.Children<JProperty>())
                     {
-                        if (skillProperty.Value.Type != JTokenType.Array)
+                        string discipline = classProperty.Value.Value<string>("discipline");
+                        if (discipline != "war" && discipline != "magic")
                         {
                             continue;
                         }
 
-                        foreach (int idx in skillProperty.Value.Values<int>())
+                        string className = classProperty.Name;
+                        if (!data.ContainsKey(className))
                         {
-                            JObject skillObject = skills.Value<JObject>(idx.ToString());
-                            if (string.IsNullOrEmpty(skillObject.Value<string>("deprecated")))
+                            data.Add(className, new Dictionary<DBIdx, SkillData>());
+                        }
+
+                        foreach (JProperty skillProperty in classProperty.Value.Children<JProperty>())
+                        {
+                            if (skillProperty.Value.Type != JTokenType.Array)
                             {
-                                DBIdx dbIdx = (DBIdx)idx;
-                                SkillData skillData = new SkillData(dbIdx, skillObject);
-                                data[className].Add(dbIdx, skillData);
+                                continue;
+                            }
+
+                            foreach (int idx in skillProperty.Value.Values<int>())
+                            {
+                                JObject skillObject = skills.Value<JObject>(idx.ToString());
+                                if (string.IsNullOrEmpty(skillObject.Value<string>("deprecated")))
+                                {
+                                    DBIdx dbIdx = (DBIdx)idx;
+                                    SkillData skillData = new SkillData(dbIdx, skillObject);
+                                    data[className].Add(dbIdx, skillData);
+                                }
                             }
                         }
                     }
-                }
 
-                JToken misc = jObject.GetValue("misc");
-                foreach (JValue jValue in misc.Children<JValue>())
-                {
-                    int idx = jValue.Value<int>();
-                    ignoreSet.Add((DBIdx)idx);
+                    JToken misc = jObject.GetValue("misc");
+                    foreach (JValue jValue in misc.Children<JValue>())
+                    {
+                        int idx = jValue.Value<int>();
+                        ignoreSet.Add((DBIdx)idx);
+                    }
                 }
             }
 
