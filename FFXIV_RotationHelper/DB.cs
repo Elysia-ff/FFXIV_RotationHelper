@@ -125,7 +125,9 @@ namespace FFXIV_RotationHelper
                             foreach (int idx in skillProperty.Value.Values<int>())
                             {
                                 JObject skillObject = skills.Value<JObject>(idx.ToString());
-                                if (string.IsNullOrEmpty(skillObject.Value<string>("deprecated")))
+
+                                string deprecatedField = skillObject.Value<string>("deprecated");
+                                if (string.IsNullOrEmpty(deprecatedField) || deprecatedField == "0")
                                 {
                                     DBIdx dbIdx = (DBIdx)idx;
                                     SkillData skillData = new SkillData(dbIdx, skillObject);
