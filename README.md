@@ -32,3 +32,8 @@ By typing the lines below in in-game chat, the plugin will execute specific comm
 1. Uncheck `Click-through` on the plugin.
 2. You can now drag the overlay using mouse.
 3. Check `Click-through` again recommended.
+
+### The Skill list is too long, big, small or ...  
+1. Check `Resizable`.
+2. Make sure `Click-through` is unchecked.
+3. You can now resize the list with mouse dragging.
