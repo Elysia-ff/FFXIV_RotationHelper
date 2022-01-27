@@ -39,12 +39,15 @@
             this.ControlBox = false;
             this.DoubleBuffered = true;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.MinimumSize = new System.Drawing.Size(40, 40);
             this.Name = "RotationWindow";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
+            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
             this.Text = "RotationWindow";
             this.TopMost = true;
             this.TransparencyKey = System.Drawing.Color.Lime;
+            this.SizeChanged += new System.EventHandler(this.RotationWindow_SizeChanged);
             this.ResumeLayout(false);
 
         }

@@ -7,8 +7,6 @@ namespace FFXIV_RotationHelper
 {
     public partial class RotationWindow : Form
     {
-        protected override Size DefaultSize { get { return new Size(800, 40); } }
-
         private RotationData loadedData;
         private List<SkillData> skillList;
         private readonly List<PictureBox> pictureList;
@@ -17,6 +15,7 @@ namespace FFXIV_RotationHelper
         public bool IsLoaded { get { return loadedData != null; } }
         public string IsLoadedURL { get { return IsLoaded ? loadedData.URL : string.Empty; } }
         public bool IsPlaying { get { return Visible && IsLoaded; } }
+        private int IconHeight { get { return ClientSize.Height - cGrip; } }
 
         private const int interval = 20;
 
@@ -33,6 +32,36 @@ namespace FFXIV_RotationHelper
                 cp.ExStyle |= 0x80;
                 return cp;
             }
+        }
+
+        // Resize
+        // https://stackoverflow.com/a/2575452
+        private const int cGrip = 12;      // Grip size
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            if (Properties.Settings.Default.Resizable)
+            {
+                Rectangle rc = new Rectangle(ClientSize.Width - cGrip, ClientSize.Height - cGrip, cGrip, cGrip);
+                ControlPaint.DrawSizeGrip(e.Graphics, Color.Black, rc);
+            }
+        }
+
+        protected override void WndProc(ref Message m)
+        {
+            if (m.Msg == 0x84)
+            {  // Trap WM_NCHITTEST
+                Point pos = new Point(m.LParam.ToInt32());
+                pos = PointToClient(pos);
+                if (Properties.Settings.Default.Resizable && pos.X >= ClientSize.Width - cGrip && pos.Y >= ClientSize.Height - cGrip)
+                {
+                    m.Result = (IntPtr)17; // HTBOTTOMRIGHT
+
+                    return;
+                }
+            }
+
+            base.WndProc(ref m);
         }
 
         public RotationWindow()
@@ -60,9 +89,9 @@ namespace FFXIV_RotationHelper
             if (Visible)
             {
                 Location = Properties.Settings.Default.Location;
+                Size = Properties.Settings.Default.WindowSize;
                 currentIdx = 0;
                 MakePictureBox();
-                SetSize(Properties.Settings.Default.Size);
             }
         }
 
@@ -90,7 +119,7 @@ namespace FFXIV_RotationHelper
                 {
                     PictureBox picture = new PictureBox
                     {
-                        Size = new Size(Height, Height),
+                        Size = new Size(IconHeight, IconHeight),
                         TabStop = false,
                         BackColor = Color.Black,
                         SizeMode = PictureBoxSizeMode.StretchImage,
@@ -113,6 +142,11 @@ namespace FFXIV_RotationHelper
 
         private void Reposition()
         {
+            if (pictureList.Count < skillList.Count)
+            {
+                return;
+            }
+
             for (int i = 0, idx = 0; i < skillList.Count; ++i)
             {
                 if (i < currentIdx)
@@ -122,7 +156,8 @@ namespace FFXIV_RotationHelper
                 else if (i < pictureList.Count)
                 {
                     pictureList[i].Visible = true;
-                    pictureList[i].Location = new Point((Height + interval) * idx++, 0);
+                    pictureList[i].Location = new Point((IconHeight + interval) * idx++, 0);
+                    pictureList[i].Size = new Size(IconHeight, IconHeight);
                 }
                 else
                 {
@@ -164,25 +199,22 @@ namespace FFXIV_RotationHelper
             }
         }
 
-        public void SetSize(string offsetStr)
-        {
-            float offset = float.Parse(offsetStr) * 0.01f;
-            Size defaultSize = DefaultSize;
-            int width = (int)(defaultSize.Width * offset);
-            int height = (int)(defaultSize.Height * offset);
-            SetClientSizeCore(width, height);
-
-            for (int i = 0; i < pictureList.Count; ++i)
-            {
-                pictureList[i].Size = new Size(height, height);
-            }
-            Reposition();
-        }
-
         public void Reset()
         {
             currentIdx = 0;
             Reposition();
+        }
+
+        private void RotationWindow_SizeChanged(object sender, EventArgs e)
+        {
+            if (Visible)
+            {
+                Properties.Settings.Default.WindowSize = Size;
+                Properties.Settings.Default.Save();
+
+                Reposition();
+                Refresh();
+            }
         }
     }
 }

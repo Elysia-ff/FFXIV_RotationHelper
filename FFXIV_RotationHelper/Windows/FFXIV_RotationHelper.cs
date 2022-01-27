@@ -26,7 +26,7 @@ namespace FFXIV_RotationHelper
             InitializeComponent();
             isClickthroughCheckBox.Checked = Properties.Settings.Default.Clickthrough;
             restartCheckBox.Checked = Properties.Settings.Default.RestartOnEnd;
-            sizeComboBox.SelectedItem = Properties.Settings.Default.Size.ToString();
+            resizableCheckBox.Checked = Properties.Settings.Default.Resizable;
 
             Command.Bind("rotationtoggle", new Method(() =>
             {
@@ -258,16 +258,11 @@ namespace FFXIV_RotationHelper
             Properties.Settings.Default.Save();
         }
 
-        private void SizeComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        private void ResizableCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            string offsetStr = sizeComboBox.SelectedItem.ToString();
-            Properties.Settings.Default.Size = offsetStr;
+            Properties.Settings.Default.Resizable = resizableCheckBox.Checked;
             Properties.Settings.Default.Save();
-
-            if (rotationWindow.Visible)
-            {
-                rotationWindow.SetSize(offsetStr);
-            }
+            rotationWindow.Refresh();
         }
 
 #if DEBUG
@@ -303,7 +298,7 @@ namespace FFXIV_RotationHelper
         {
             LogLineEventArgs args = new LogLineEventArgs(logLineBox.Text, 0, DateTime.Now, string.Empty, true);
             OFormActMain_BeforeLogLineRead(false, args);
-        }
+        }		
 #endif
-    }
+	}
 }
