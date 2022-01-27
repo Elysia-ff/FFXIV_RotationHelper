@@ -31,10 +31,12 @@
 			this.urlTextBox = new System.Windows.Forms.TextBox();
 			this.loadBtn = new System.Windows.Forms.Button();
 			this.startBtn = new System.Windows.Forms.Button();
+#if DEBUG
 			this.debugTextBox = new System.Windows.Forms.TextBox();
 			this.debugLabel = new System.Windows.Forms.Label();
 			this.logLineBox = new System.Windows.Forms.TextBox();
 			this.logInsertBtn = new System.Windows.Forms.Button();
+#endif
 			this.nameTitle = new System.Windows.Forms.Label();
 			this.nameText = new System.Windows.Forms.Label();
 			this.petTitle = new System.Windows.Forms.Label();
@@ -76,6 +78,7 @@
 			this.startBtn.Text = "Start";
 			this.startBtn.UseVisualStyleBackColor = true;
 			this.startBtn.Click += new System.EventHandler(this.StartBtn_Click);
+#if DEBUG
 			// 
 			// debugTextBox
 			// 
@@ -110,6 +113,7 @@
 			this.logInsertBtn.Text = "Insert";
 			this.logInsertBtn.UseVisualStyleBackColor = true;
 			this.logInsertBtn.Click += new System.EventHandler(this.LogInsertBtn_Click);
+#endif
 			// 
 			// nameTitle
 			// 
@@ -215,10 +219,12 @@
 			this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.Controls.Add(this.resizableCheckBox);
+#if DEBUG
 			this.Controls.Add(this.debugLabel);
 			this.Controls.Add(this.debugTextBox);
 			this.Controls.Add(this.logInsertBtn);
 			this.Controls.Add(this.logLineBox);
+#endif
 			this.Controls.Add(this.saveBtn);
 			this.Controls.Add(this.restartCheckBox);
 			this.Controls.Add(this.isClickthroughCheckBox);
