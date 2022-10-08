@@ -23,7 +23,7 @@ namespace FFXIV_RotationHelper
         public void Initialize(string url)
         {
             URL = url;
-            Sequence = SequenceStr.Split(',')
+            Sequence = SequenceStr?.Split(',')
                 .ToList()
                 .ConvertAll((s) => (DBIdx)int.Parse(s))
                 .Where((i) => !DB.IsIgnoreSet(i))

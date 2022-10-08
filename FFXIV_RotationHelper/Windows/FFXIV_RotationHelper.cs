@@ -96,13 +96,13 @@ namespace FFXIV_RotationHelper
             startBtn.Enabled = false;
 
             RotationData data = await GetRotationAsync(url);
-            rotationWindow.LoadData(data);
-            if (data == null || data.Sequence == null || data.Sequence.Count <= 0)
+            if (data == null || data.Class == null || data.Sequence == null || data.Sequence.Count <= 0)
             {
                 MessageBox.Show(this, "Couldn't load the rotation.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
+            rotationWindow.LoadData(data);
             startBtn.Enabled = true;
             UpdateStatusLabel();
         }
