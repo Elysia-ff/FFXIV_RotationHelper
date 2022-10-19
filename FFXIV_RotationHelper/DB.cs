@@ -169,7 +169,7 @@ namespace FFXIV_RotationHelper
 
         public static List<SkillData> Get(RotationData rotationData)
         {
-            if (rotationData.Class != null || !data.ContainsKey(rotationData.Class) || rotationData.Sequence == null || rotationData.Sequence.Count <= 0)
+            if (rotationData.Class == null || !data.ContainsKey(rotationData.Class) || rotationData.Sequence == null || rotationData.Sequence.Count <= 0)
             {
                 return new List<SkillData>();
             }
