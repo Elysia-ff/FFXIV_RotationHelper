@@ -10,7 +10,7 @@ Listed skills will not be supported.
 3. Potions (plugin will ignore the potions of rotation.)
 
 ## Troubleshooting
-If some actions does not work, Please make a issue [here](https://github.com/Elysia-ff/FFXIV_RotationHelper/issues/new?assignees=&labels=&template=bug_report.md&title=).  
+If some actions does not work, Please make a issue [here](https://github.com/Elysia-ff/FFXIV_RotationHelper/issues/new?assignees=&labels=&template=bug_report.md&title=). Or DM me on Discord (Ellie#3982)  
 Especially for SMN and NIN.
 
 
@@ -32,3 +32,8 @@ By typing the lines below in in-game chat, the plugin will execute specific comm
 1. Uncheck `Click-through` on the plugin.
 2. You can now drag the overlay using mouse.
 3. Check `Click-through` again recommended.
+
+### The Skill list is too long, big, small or ...  
+1. Check `Resizable`.
+2. Make sure `Click-through` is unchecked.
+3. You can now resize the list with mouse dragging.

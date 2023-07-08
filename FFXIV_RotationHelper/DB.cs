@@ -1,8 +1,10 @@
 ﻿using CsvHelper;
+using CsvHelper.Configuration;
 using FFXIV_RotationHelper.StrongType;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
@@ -13,6 +15,14 @@ namespace FFXIV_RotationHelper
 
     public static class DB
     {
+        private class ActionTableRow
+        {
+            public string ClassName { get; set; }
+            public string ActionName { get; set; }
+            public int GameIdx { get; set; }
+            public int DBIdx { get; set; }
+        };
+
         /// <summary>
         /// DB loaded from https://ffxivrotations.com/db.json
         /// </summary>
@@ -46,34 +56,40 @@ namespace FFXIV_RotationHelper
             {
                 string content = await streamReader.ReadToEndAsync();
 
-                using (StringReader reader = new StringReader(content))
-                using (CsvReader csv = new CsvReader(reader))
+                Task readTask = new Task(() => ReadCSV(content));
+                readTask.Start();
+
+                await readTask;
+            }
+        }
+
+        private static void ReadCSV(string content)
+        {
+            CsvConfiguration configure = new CsvConfiguration(CultureInfo.InvariantCulture)
+            {
+                Delimiter = ",",
+                Quote = '\"',
+            };
+
+            using (StringReader reader = new StringReader(content))
+            using (CsvReader csv = new CsvReader(reader, configure))
+            {
+                var recodes = csv.GetRecords<ActionTableRow>();
+                foreach (ActionTableRow r in recodes)
                 {
-                    csv.Configuration.Delimiter = ",";
-                    csv.Configuration.Quote = '\"';
-#if DEBUG
-                    csv.Configuration.BadDataFound = context => Debug.WriteLine(context.RawRecord);
-#endif
-
-                    await csv.ReadAsync();
-                    while (await csv.ReadAsync())
+                    if (!actionTable.ContainsKey(r.ClassName))
                     {
-                        string[] records = csv.Context.Record;
-                        string className = records[0];
-                        if (!actionTable.ContainsKey(className))
-                        {
-                            actionTable.Add(className, new Dictionary<GameIdx, List<DBIdx>>());
-                        }
-
-                        GameIdx gameIdx = (GameIdx)int.Parse(records[2]);
-                        if (!actionTable[className].ContainsKey(gameIdx))
-                        {
-                            actionTable[className].Add(gameIdx, new List<DBIdx>());
-                        }
-
-                        DBIdx dbIdx = (DBIdx)int.Parse(records[3]);
-                        actionTable[className][gameIdx].Add(dbIdx);
+                        actionTable.Add(r.ClassName, new Dictionary<GameIdx, List<DBIdx>>());
                     }
+
+                    GameIdx gameIdx = (GameIdx)r.GameIdx;
+                    if (!actionTable[r.ClassName].ContainsKey(gameIdx))
+                    {
+                        actionTable[r.ClassName].Add(gameIdx, new List<DBIdx>());
+                    }
+
+                    DBIdx dbIdx = (DBIdx)r.DBIdx;
+                    actionTable[r.ClassName][gameIdx].Add(dbIdx);
                 }
             }
         }
@@ -125,7 +141,9 @@ namespace FFXIV_RotationHelper
                             foreach (int idx in skillProperty.Value.Values<int>())
                             {
                                 JObject skillObject = skills.Value<JObject>(idx.ToString());
-                                if (string.IsNullOrEmpty(skillObject.Value<string>("deprecated")))
+
+                                string deprecatedField = skillObject.Value<string>("deprecated");
+                                if (string.IsNullOrEmpty(deprecatedField) || deprecatedField == "0")
                                 {
                                     DBIdx dbIdx = (DBIdx)idx;
                                     SkillData skillData = new SkillData(dbIdx, skillObject);
@@ -151,7 +169,7 @@ namespace FFXIV_RotationHelper
 
         public static List<SkillData> Get(RotationData rotationData)
         {
-            if (!data.ContainsKey(rotationData.Class) || rotationData.Sequence == null || rotationData.Sequence.Count <= 0)
+            if (rotationData.Class == null || !data.ContainsKey(rotationData.Class) || rotationData.Sequence == null || rotationData.Sequence.Count <= 0)
             {
                 return new List<SkillData>();
             }
