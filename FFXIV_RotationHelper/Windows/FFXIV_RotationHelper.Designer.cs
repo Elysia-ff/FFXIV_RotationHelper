@@ -28,16 +28,13 @@
         /// </summary>
         private void InitializeComponent()
         {
-			this.urlTextBox = new System.Windows.Forms.TextBox();
-			this.loadBtn = new System.Windows.Forms.Button();
-			this.startBtn = new System.Windows.Forms.Button();
             this.loadBtn = new System.Windows.Forms.Button();
             this.startBtn = new System.Windows.Forms.Button();
 #if DEBUG
-			this.debugTextBox = new System.Windows.Forms.TextBox();
-			this.debugLabel = new System.Windows.Forms.Label();
-			this.logLineBox = new System.Windows.Forms.TextBox();
-			this.logInsertBtn = new System.Windows.Forms.Button();
+            this.debugTextBox = new System.Windows.Forms.TextBox();
+            this.debugLabel = new System.Windows.Forms.Label();
+            this.logLineBox = new System.Windows.Forms.TextBox();
+            this.logInsertBtn = new System.Windows.Forms.Button();
 #endif
             this.nameTitle = new System.Windows.Forms.Label();
             this.nameText = new System.Windows.Forms.Label();
@@ -284,10 +281,10 @@
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.gvSelectedUrls);
 #if DEBUG
-			this.Controls.Add(this.debugLabel);
-			this.Controls.Add(this.debugTextBox);
-			this.Controls.Add(this.logInsertBtn);
-			this.Controls.Add(this.logLineBox);
+            this.Controls.Add(this.debugLabel);
+            this.Controls.Add(this.debugTextBox);
+            this.Controls.Add(this.logInsertBtn);
+            this.Controls.Add(this.logLineBox);
 #endif
             this.Controls.Add(this.saveBtn);
             this.Controls.Add(this.sizeTitle);

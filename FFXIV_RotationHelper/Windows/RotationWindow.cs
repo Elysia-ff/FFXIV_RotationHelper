@@ -18,7 +18,6 @@ namespace FFXIV_RotationHelper
         private string loadedClass = string.Empty;
         public bool IsLoaded { get { return rotations.Exists(x=>x.Data != null); } }
         public bool IsPlaying { get { return Visible && IsLoaded; } }
-        private int IconHeight { get { return ClientSize.Height - cGrip; } }
 
         private const int interval = 20;
 
@@ -35,36 +34,6 @@ namespace FFXIV_RotationHelper
                 cp.ExStyle |= 0x80;
                 return cp;
             }
-        }
-
-        // Resize
-        // https://stackoverflow.com/a/2575452
-        private const int cGrip = 12;      // Grip size
-
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            if (Properties.Settings.Default.Resizable)
-            {
-                Rectangle rc = new Rectangle(ClientSize.Width - cGrip, ClientSize.Height - cGrip, cGrip, cGrip);
-                ControlPaint.DrawSizeGrip(e.Graphics, Color.Black, rc);
-            }
-        }
-
-        protected override void WndProc(ref Message m)
-        {
-            if (m.Msg == 0x84)
-            {  // Trap WM_NCHITTEST
-                Point pos = new Point(m.LParam.ToInt32());
-                pos = PointToClient(pos);
-                if (Properties.Settings.Default.Resizable && pos.X >= ClientSize.Width - cGrip && pos.Y >= ClientSize.Height - cGrip)
-                {
-                    m.Result = (IntPtr)17; // HTBOTTOMRIGHT
-
-                    return;
-                }
-            }
-
-            base.WndProc(ref m);
         }
 
         public RotationWindow()
@@ -168,7 +137,7 @@ namespace FFXIV_RotationHelper
                 {
                     PictureBox picture = new PictureBox
                     {
-                        Size = new Size(IconHeight, IconHeight),
+                        Size = new Size(Height, Height),
                         TabStop = false,
                         BackColor = Color.Black,
                         SizeMode = PictureBoxSizeMode.StretchImage,
@@ -247,9 +216,18 @@ namespace FFXIV_RotationHelper
             }
         }
 
-        public void Reset()
+        public void SetSize(string offsetStr)
         {
-            currentIdx = 0;
+            float offset = float.Parse(offsetStr) * 0.01f;
+            Size defaultSize = DefaultSize;
+            int width = (int)(defaultSize.Width * offset);
+            int height = (int)(defaultSize.Height * offset);
+            SetClientSizeCore(width, height);
+
+            for (int i = 0; i < pictureList.Count; ++i)
+            {
+                pictureList[i].Size = new Size(height, height);
+            }
             Reposition();
         }
 

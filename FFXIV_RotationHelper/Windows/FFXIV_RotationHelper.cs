@@ -468,11 +468,16 @@ namespace FFXIV_RotationHelper
             }
         }
 
-        private void ResizableCheckBox_CheckedChanged(object sender, EventArgs e)
+        private void SizeComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            Properties.Settings.Default.Resizable = resizableCheckBox.Checked;
+            string offsetStr = sizeComboBox.SelectedItem.ToString();
+            Properties.Settings.Default.Size = offsetStr;
             Properties.Settings.Default.Save();
-            rotationWindow.Refresh();
+
+            if (rotationWindow.Visible)
+            {
+                rotationWindow.SetSize(offsetStr);
+            }
         }
 
 #if DEBUG
@@ -511,5 +516,5 @@ namespace FFXIV_RotationHelper
         }
 
 #endif
-	}
+    }
 }

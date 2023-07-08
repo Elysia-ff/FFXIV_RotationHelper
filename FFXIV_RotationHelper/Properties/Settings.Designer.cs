@@ -61,6 +61,18 @@ namespace FFXIV_RotationHelper.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("100")]
+        public string Size {
+            get {
+                return ((string)(this["Size"]));
+            }
+            set {
+                this["Size"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string lastURL {
             get {
@@ -80,30 +92,6 @@ namespace FFXIV_RotationHelper.Properties {
             }
             set {
                 this["SavedURLs"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool Resizable {
-            get {
-                return ((bool)(this["Resizable"]));
-            }
-            set {
-                this["Resizable"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("800, 52")]
-        public global::System.Drawing.Size WindowSize {
-            get {
-                return ((global::System.Drawing.Size)(this["WindowSize"]));
-            }
-            set {
-                this["WindowSize"] = value;
             }
         }
         
